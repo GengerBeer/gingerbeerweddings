@@ -35,7 +35,7 @@ export default function FAQSection() {
     <section id="faq" className="section-cream py-28 md:py-40">
       <div className="max-w-5xl mx-auto px-6 md:px-12">
         {/* Header */}
-        <div className="mb-16">
+        <div className="mb-10 md:mb-12">
           <p className="text-label uppercase tracking-[0.2em] text-muted-foreground font-sans text-[10px] mb-4">
             FAQ
           </p>
