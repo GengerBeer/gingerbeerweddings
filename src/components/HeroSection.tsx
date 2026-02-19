@@ -3,11 +3,14 @@ import heroBg from "@/assets/hero-bg.jpg";
 export default function HeroSection() {
   return (
     <section className="relative h-screen min-h-[600px] flex items-center justify-center overflow-hidden">
-      {/* Background image */}
-      <img
-        src={heroBg}
-        alt=""
-        className="absolute inset-0 w-full h-full object-cover object-center"
+      {/* Background image with fallback gradient */}
+      <div
+        className="absolute inset-0 bg-brand-dark"
+        style={{
+          backgroundImage: `url(${heroBg})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
         aria-hidden="true"
       />
 
