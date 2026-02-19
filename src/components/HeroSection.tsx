@@ -17,9 +17,8 @@ export default function HeroSection() {
       {/* Cinematic overlay */}
       <div className="absolute inset-0 hero-overlay" aria-hidden="true" />
 
-      {/* Letterbox bars */}
-      <div className="absolute top-0 left-0 right-0 h-[5vh] bg-foreground/90" aria-hidden="true" />
-      <div className="absolute bottom-0 left-0 right-0 h-[5vh] bg-foreground/90" aria-hidden="true" />
+
+
 
       {/* Content */}
       <div className="relative z-10 text-center px-6 max-w-4xl mx-auto">

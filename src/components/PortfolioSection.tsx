@@ -60,7 +60,7 @@ export default function PortfolioSection() {
     <section id="portfolio" className="section-cream py-28 md:py-40">
       <div className="max-w-7xl mx-auto px-6 md:px-12">
         {/* Header */}
-        <div className="mb-16 md:mb-24">
+        <div className="mb-10 md:mb-14">
           <p className="text-label uppercase tracking-[0.2em] text-muted-foreground font-sans text-[10px] mb-4">
             Our Work
           </p>
