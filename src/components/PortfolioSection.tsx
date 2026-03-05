@@ -59,16 +59,17 @@ export default function PortfolioSection() {
             <div className="absolute inset-0 overflow-hidden rounded-xl">
               <img src={projects[0].thumbnail} alt={projects[0].title} className="w-full h-full object-cover" loading="lazy" />
             </div>
-            <div className="card-overlay absolute inset-0 rounded-xl flex flex-col justify-end p-8">
-              <div className="flex items-end justify-between">
-                <div>
+            <div className="card-overlay-bg absolute inset-0 rounded-xl" />
+            <div className="absolute inset-0 rounded-xl flex flex-col justify-end p-8 pointer-events-none">
+              <div className="flex items-end justify-between w-full">
+                <div className="card-content-text pointer-events-auto">
                   <p className="text-brand-cream font-serif text-2xl font-extrabold mb-1">{projects[0].title}</p>
                   <p className="text-brand-cream/70 font-sans text-[11px] uppercase tracking-widest">
                     {projects[0].type} · {projects[0].clientType}
                   </p>
                 </div>
-                <div className="play-btn shrink-0">
-                  <Play size={16} className="text-brand-teal ml-0.5" fill="currentColor" />
+                <div className="play-btn shrink-0 pointer-events-auto">
+                  <Play size={20} className="text-white relative z-10 drop-shadow ml-1" fill="currentColor" />
                 </div>
               </div>
             </div>
@@ -91,16 +92,17 @@ export default function PortfolioSection() {
                 <div className="absolute inset-0 overflow-hidden rounded-xl">
                   <img src={project.thumbnail} alt={project.title} className="w-full h-full object-cover" loading="lazy" />
                 </div>
-                <div className="card-overlay absolute inset-0 rounded-xl flex flex-col justify-end p-6">
-                  <div className="flex items-end justify-between">
-                    <div>
+                <div className="card-overlay-bg absolute inset-0 rounded-xl" />
+                <div className="absolute inset-0 rounded-xl flex flex-col justify-end p-6 pointer-events-none">
+                  <div className="flex items-end justify-between w-full">
+                    <div className="card-content-text pointer-events-auto">
                       <p className="text-brand-cream font-serif text-xl font-extrabold mb-1">{project.title}</p>
                       <p className="text-brand-cream/70 font-sans text-[10px] uppercase tracking-widest">
                         {project.type} · {project.clientType}
                       </p>
                     </div>
-                    <div className="play-btn shrink-0">
-                      <Play size={14} className="text-brand-teal ml-0.5" fill="currentColor" />
+                    <div className="play-btn shrink-0 pointer-events-auto">
+                      <Play size={20} className="text-white relative z-10 drop-shadow ml-1" fill="currentColor" />
                     </div>
                   </div>
                 </div>
@@ -122,16 +124,17 @@ export default function PortfolioSection() {
           <div className="aspect-[21/7] overflow-hidden rounded-xl">
             <img src={projects[3].thumbnail} alt={projects[3].title} className="w-full h-full object-cover" loading="lazy" />
           </div>
-          <div className="card-overlay absolute inset-0 rounded-xl flex items-end p-8">
+          <div className="card-overlay-bg absolute inset-0 rounded-xl" />
+          <div className="absolute inset-0 rounded-xl flex items-end p-8 pointer-events-none">
             <div className="flex items-end justify-between w-full">
-              <div>
+              <div className="card-content-text pointer-events-auto">
                 <p className="text-brand-cream font-serif text-2xl font-extrabold mb-1">{projects[3].title}</p>
                 <p className="text-brand-cream/70 font-sans text-[11px] uppercase tracking-widest">
                   {projects[3].type} · {projects[3].clientType}
                 </p>
               </div>
-              <div className="play-btn shrink-0">
-                <Play size={16} className="text-brand-teal ml-0.5" fill="currentColor" />
+              <div className="play-btn shrink-0 pointer-events-auto">
+                <Play size={20} className="text-white relative z-10 drop-shadow ml-1" fill="currentColor" />
               </div>
             </div>
           </div>
