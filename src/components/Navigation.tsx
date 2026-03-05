@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import logoLight from "@/assets/logo-vector.svg";
-import logoDark from "@/assets/logo-vector-dark.svg";
+import logoDark from "@/assets/logo-vector-dark-green.svg";
 
 const navLinks = [
   { label: "Portfolio", href: "#portfolio" },
@@ -22,9 +22,9 @@ export default function Navigation() {
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 animate-fade-down ${scrolled ? "nav-scrolled" : "nav-top"
-        }`}
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 animate-fade-down ${scrolled ? "nav-scrolled" : "nav-top"}`}
     >
+
       <nav className="max-w-7xl mx-auto px-6 md:px-12 h-16 md:h-20 flex items-center justify-between">
         {/* Logo */}
         <a href="#" className="flex items-center self-center shrink-0 leading-none">
@@ -54,7 +54,7 @@ export default function Navigation() {
         <a
           href="#book"
           className={`hidden md:inline-flex items-center self-center gap-2 text-[11px] uppercase tracking-widest font-sans font-medium px-5 py-2.5 rounded-full border transition-all duration-300 ${scrolled
-            ? "border-brand-burgundy text-brand-burgundy hover:bg-brand-burgundy hover:text-brand-cream"
+            ? "border-brand-dark text-brand-dark hover:bg-brand-dark hover:text-brand-cream"
             : "border-brand-cream text-brand-cream hover:bg-brand-cream/10 hover:border-brand-cream"
             }`}
         >
