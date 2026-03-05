@@ -16,6 +16,38 @@ export default function HeroSection() {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [activeVideo, setActiveVideo] = useState<any>(null);
 
+  // Refs for cursor-tracking — avoids React re-renders on every mousemove
+  const leftBtnRef = useRef<HTMLDivElement>(null);
+  const rightBtnRef = useRef<HTMLDivElement>(null);
+  const leftImgRef = useRef<HTMLImageElement>(null);
+  const rightImgRef = useRef<HTMLImageElement>(null);
+
+  const handleCardEnter = (side: "left" | "right") => {
+    const img = side === "left" ? leftImgRef.current : rightImgRef.current;
+    const btn = side === "left" ? leftBtnRef.current : rightBtnRef.current;
+    if (img) { img.style.filter = "grayscale(0%)"; img.style.scale = "1.05"; }
+    if (btn) btn.style.opacity = "1";
+  };
+
+  const handleCardLeave = (side: "left" | "right") => {
+    const img = side === "left" ? leftImgRef.current : rightImgRef.current;
+    const btn = side === "left" ? leftBtnRef.current : rightBtnRef.current;
+    const defaultFilter = side === "left" ? "grayscale(100%) contrast(110%)" : "grayscale(10%)";
+    if (img) { img.style.filter = defaultFilter; img.style.scale = "1"; }
+    if (btn) btn.style.opacity = "0";
+  };
+
+  const handleCardMove = (e: React.MouseEvent<HTMLDivElement>, side: "left" | "right") => {
+    // Disable tracking on touch devices so it stays centered
+    if (window.matchMedia("(hover: none)").matches) return;
+
+    const btn = side === "left" ? leftBtnRef.current : rightBtnRef.current;
+    if (!btn) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    btn.style.left = `${e.clientX - rect.left}px`;
+    btn.style.top = `${e.clientY - rect.top}px`;
+  };
+
   const openVideo = (video: any) => {
     setActiveVideo(video);
     setLightboxOpen(true);
@@ -110,97 +142,142 @@ export default function HeroSection() {
         <div className="h-10" />
 
         {/* Center: Editorial Layout Title with Staggered Cascading */}
-        <div className="flex-1 flex flex-col justify-center items-start relative lg:mt-[-4vh]">
+        <div className="flex-1 flex flex-col justify-center items-center 2xl:items-start relative lg:mt-[-4vh]">
 
           <div
-            className="parallax-left absolute top-[4%] md:top-[10%] left-[-15%] md:left-[-20%] w-[35vw] md:w-[20vw] aspect-[3/4] rounded-2xl overflow-hidden shadow-2xl animate-fade-in z-10 border border-brand-cream/10 hidden md:block transition-transform duration-700 ease-out group cursor-pointer isolate"
+            className="parallax-left absolute top-[10%] 2xl:top-[10%] left-[-5%] md:left-[0%] 2xl:left-[-20%] w-[28vw] md:w-[24vw] 2xl:w-[20vw] aspect-[3/4] rounded-2xl overflow-hidden shadow-2xl animate-fade-in z-20 border border-brand-cream/10 transition-transform duration-700 ease-out isolate"
             style={{
               animationDelay: "0.5s",
               transform: "translate(10px, -10px) rotate(-6deg)",
               willChange: "transform",
-              WebkitMaskImage: "-webkit-radial-gradient(white, black)" // Force hardware clipping
+              WebkitMaskImage: "-webkit-radial-gradient(white, black)",
+              cursor: "none",
             }}
             onClick={() => openVideo(heroVideos.left)}
+            onMouseEnter={() => handleCardEnter("left")}
+            onMouseLeave={() => handleCardLeave("left")}
+            onMouseMove={(e) => handleCardMove(e, "left")}
           >
             <img
+              ref={leftImgRef}
               src={portfolio2}
               alt=""
-              className="w-full h-full object-cover grayscale-[100%] contrast-[110%] group-hover:grayscale-0 group-hover:scale-105 transition-all duration-1000"
-              style={{ backfaceVisibility: "hidden", transform: "translateZ(0)" }}
+              className="w-full h-full object-cover"
+              style={{
+                backfaceVisibility: "hidden",
+                transform: "translateZ(0)",
+                transition: "filter 0.5s ease, scale 0.5s ease",
+                filter: "grayscale(100%) contrast(110%)",
+                scale: "1",
+              }}
             />
-            <div className="absolute inset-0 bg-brand-dark/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-center justify-center">
-              <div className="w-16 h-16 rounded-full border border-brand-cream/40 bg-brand-cream/10 backdrop-blur-sm flex items-center justify-center transform scale-90 group-hover:scale-100 transition-transform duration-500">
-                <Play size={24} className="text-brand-cream ml-1" fill="currentColor" />
+            <div
+              ref={leftBtnRef}
+              className="absolute pointer-events-none rounded-full"
+              style={{
+                width: 64, height: 64,
+                left: "50%", top: "50%",
+                transform: "translate(-50%, -50%)",
+                opacity: 0.7,
+                transition: "opacity 0.25s ease, left 0.1s ease-out, top 0.1s ease-out",
+                background: "linear-gradient(145deg, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.04) 100%)",
+                backdropFilter: "blur(20px) saturate(180%)",
+                WebkitBackdropFilter: "blur(20px) saturate(180%)",
+                border: "1px solid rgba(255,255,255,0.4)",
+                boxShadow: "0 2px 16px rgba(0,0,0,0.2), inset 0 1.5px 0 rgba(255,255,255,0.55), inset 0 -1px 0 rgba(255,255,255,0.08)",
+              }}
+            >
+              <div className="absolute inset-0 rounded-full" style={{ background: "linear-gradient(155deg, rgba(255,255,255,0.3) 0%, transparent 40%)" }} />
+              <div className="w-full h-full flex items-center justify-center">
+                <Play size={20} className="text-white relative z-10 drop-shadow" style={{ marginLeft: 2 }} fill="currentColor" />
               </div>
             </div>
           </div>
 
-          {/* Right Color Image: Shifted further right */}
+          {/* Right Color Image */}
           <div
-            className="parallax-right absolute top-[5%] md:top-[12%] right-[-10%] md:right-[-20%] w-[45vw] md:w-[28vw] aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl animate-fade-in z-10 border border-brand-cream/10 hidden md:block transition-transform duration-700 ease-out group cursor-pointer isolate"
+            className="parallax-right absolute top-[25%] 2xl:top-[12%] right-[-5%] md:right-[0%] 2xl:right-[-20%] w-[36vw] md:w-[32vw] 2xl:w-[28vw] aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl animate-fade-in z-20 border border-brand-cream/10 transition-transform duration-700 ease-out isolate"
             style={{
               transform: "translate(-15px, 5px) rotate(3deg)",
               willChange: "transform",
-              WebkitMaskImage: "-webkit-radial-gradient(white, black)" // Force hardware clipping
+              WebkitMaskImage: "-webkit-radial-gradient(white, black)",
+              cursor: "none",
             }}
             onClick={() => openVideo(heroVideos.right)}
+            onMouseEnter={() => handleCardEnter("right")}
+            onMouseLeave={() => handleCardLeave("right")}
+            onMouseMove={(e) => handleCardMove(e, "right")}
           >
             <img
+              ref={rightImgRef}
               src={portfolio1}
               alt=""
-              className="w-full h-full object-cover grayscale-[10%] group-hover:grayscale-0 group-hover:scale-105 transition-all duration-1000"
-              style={{ backfaceVisibility: "hidden", transform: "translateZ(0)" }}
+              className="w-full h-full object-cover"
+              style={{
+                backfaceVisibility: "hidden",
+                transform: "translateZ(0)",
+                transition: "filter 0.5s ease, scale 0.5s ease",
+                filter: "grayscale(10%)",
+                scale: "1",
+              }}
             />
-            <div className="absolute inset-0 bg-brand-dark/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-center justify-center">
-              <div className="w-20 h-20 rounded-full border border-brand-cream/40 bg-brand-cream/10 backdrop-blur-sm flex items-center justify-center transform scale-90 group-hover:scale-100 transition-transform duration-500">
-                <Play size={30} className="text-brand-cream ml-1" fill="currentColor" />
+            <div
+              ref={rightBtnRef}
+              className="absolute pointer-events-none rounded-full"
+              style={{
+                width: 80, height: 80,
+                left: "50%", top: "50%",
+                transform: "translate(-50%, -50%)",
+                opacity: 0.7,
+                transition: "opacity 0.25s ease, left 0.1s ease-out, top 0.1s ease-out",
+                background: "linear-gradient(145deg, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.04) 100%)",
+                backdropFilter: "blur(20px) saturate(180%)",
+                WebkitBackdropFilter: "blur(20px) saturate(180%)",
+                border: "1px solid rgba(255,255,255,0.4)",
+                boxShadow: "0 2px 16px rgba(0,0,0,0.2), inset 0 1.5px 0 rgba(255,255,255,0.55), inset 0 -1px 0 rgba(255,255,255,0.08)",
+              }}
+            >
+              <div className="absolute inset-0 rounded-full" style={{ background: "linear-gradient(155deg, rgba(255,255,255,0.3) 0%, transparent 40%)" }} />
+              <div className="w-full h-full flex items-center justify-center">
+                <Play size={26} className="text-white relative z-10 drop-shadow" style={{ marginLeft: 3 }} fill="currentColor" />
               </div>
             </div>
           </div>
 
-          <div className="relative z-30 w-full flex flex-col pointer-events-none">
-            {/* Title stagger effect with softer drop-shadow for overlap readability */}
-            <h1
-              className="font-serif text-[12vw] md:text-[8.5vw] lg:text-[7.5vw] text-brand-cream font-extrabold leading-[0.82] tracking-tight animate-fade-up drop-shadow-[0_2px_15px_rgba(0,0,0,0.4)] pointer-events-auto"
-              style={{ animationDelay: "0.2s" }}
-            >
-              Cinematic
-            </h1>
+          <div className="relative z-30 w-full flex flex-col items-center pointer-events-none">
 
-            <h2
-              className="font-serif text-[12vw] md:text-[8.5vw] lg:text-[7.5vw] text-brand-cream font-extrabold leading-[0.82] tracking-tight animate-fade-up mt-1 md:mt-2 ml-[8vw] md:ml-[12vw] drop-shadow-[0_2px_15px_rgba(0,0,0,0.4)] pointer-events-auto"
-              style={{ animationDelay: "0.4s" }}
-            >
-              Wedding
-            </h2>
+            <div className="flex flex-col items-start text-left">
+              <h1
+                className="font-serif text-[12vw] md:text-[8.5vw] lg:text-[7.5vw] text-brand-cream font-extrabold leading-[0.82] tracking-tight animate-fade-up drop-shadow-[0_2px_15px_rgba(0,0,0,0.4)]"
+                style={{ animationDelay: "0.2s" }}
+              >
+                Cinematic
+              </h1>
 
-            <div className="flex flex-col items-start animate-fade-up mt-1 md:mt-2 ml-[20vw] md:ml-[35vw] pointer-events-auto" style={{ animationDelay: "0.6s" }}>
-              <h2 className="font-serif text-[12vw] md:text-[8.5vw] lg:text-[7.5vw] text-brand-cream font-extrabold leading-[0.82] tracking-tight drop-shadow-[0_2px_15px_rgba(0,0,0,0.4)]">
-                Films
+              <h2
+                className="font-serif text-[12vw] md:text-[8.5vw] lg:text-[7.5vw] text-brand-cream font-extrabold leading-[0.82] tracking-tight animate-fade-up mt-1 md:mt-2 ml-[8vw] md:ml-[12vw] drop-shadow-[0_2px_15px_rgba(0,0,0,0.4)]"
+                style={{ animationDelay: "0.4s" }}
+              >
+                Wedding
               </h2>
+
+              <div className="flex flex-col animate-fade-up mt-1 md:mt-2 ml-[20vw] md:ml-[35vw]" style={{ animationDelay: "0.6s" }}>
+                <h2 className="font-serif text-[12vw] md:text-[8.5vw] lg:text-[7.5vw] text-brand-cream font-extrabold leading-[0.82] tracking-tight drop-shadow-[0_2px_15px_rgba(0,0,0,0.4)]">
+                  Films
+                </h2>
+              </div>
             </div>
 
-            {/* Script phrase centered horizontally below the cascade */}
-            <div className="w-full flex justify-center mt-8 md:mt-12 animate-fade-in pointer-events-auto" style={{ animationDelay: "1.2s" }}>
-              <span className="font-script text-brand-sand text-5xl md:text-7xl lg:text-8xl drop-shadow-[0_4px_20px_rgba(0,0,0,0.4)] block leading-none whitespace-nowrap">
+            <div className="w-full flex justify-center mt-8 md:mt-12 animate-fade-in" style={{ animationDelay: "1.2s" }}>
+              <span className="font-script text-brand-sand text-[11vw] md:text-7xl lg:text-8xl drop-shadow-[0_4px_20px_rgba(0,0,0,0.4)] block leading-none whitespace-nowrap">
                 That Feel Like You
               </span>
-            </div>
-
-            {/* Mobile-only Images (simplified layout) */}
-            <div className="md:hidden flex gap-4 mt-8">
-              <div className="w-1/2 aspect-square rounded-lg overflow-hidden shadow-xl rotate-1 border border-brand-cream/10">
-                <img src={portfolio1} alt="" className="w-full h-full object-cover grayscale-[10%]" />
-              </div>
-              <div className="w-1/2 aspect-square rounded-lg overflow-hidden shadow-xl -rotate-1 mt-4 border border-brand-cream/10">
-                <img src={portfolio2} alt="" className="w-full h-full object-cover grayscale-[100%]" />
-              </div>
             </div>
           </div>
         </div>
 
         {/* Bottom Bar: Clean Layout */}
-        <div className="w-full flex flex-col md:flex-row items-end justify-between gap-8 md:gap-0 animate-fade-in" style={{ animationDelay: "1.2s" }}>
+        <div className="relative z-30 w-full flex flex-col md:flex-row items-end justify-between gap-4 lg:gap-8 animate-fade-in" style={{ animationDelay: "1.2s" }}>
 
           <div className="max-w-[320px]">
             <p className="font-sans text-brand-cream/60 text-[10px] uppercase tracking-[0.2em] leading-relaxed">
