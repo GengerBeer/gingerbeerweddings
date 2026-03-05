@@ -16,38 +16,6 @@ export default function HeroSection() {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [activeVideo, setActiveVideo] = useState<any>(null);
 
-  // Refs for cursor-tracking — avoids React re-renders on every mousemove
-  const leftBtnRef = useRef<HTMLDivElement>(null);
-  const rightBtnRef = useRef<HTMLDivElement>(null);
-  const leftImgRef = useRef<HTMLImageElement>(null);
-  const rightImgRef = useRef<HTMLImageElement>(null);
-
-  const handleCardEnter = (side: "left" | "right") => {
-    const img = side === "left" ? leftImgRef.current : rightImgRef.current;
-    const btn = side === "left" ? leftBtnRef.current : rightBtnRef.current;
-    if (img) { img.style.filter = "grayscale(0%)"; img.style.scale = "1.05"; }
-    if (btn) btn.style.opacity = "1";
-  };
-
-  const handleCardLeave = (side: "left" | "right") => {
-    const img = side === "left" ? leftImgRef.current : rightImgRef.current;
-    const btn = side === "left" ? leftBtnRef.current : rightBtnRef.current;
-    const defaultFilter = side === "left" ? "grayscale(100%) contrast(110%)" : "grayscale(10%)";
-    if (img) { img.style.filter = defaultFilter; img.style.scale = "1"; }
-    if (btn) btn.style.opacity = "0";
-  };
-
-  const handleCardMove = (e: React.MouseEvent<HTMLDivElement>, side: "left" | "right") => {
-    // Disable tracking on touch devices so it stays centered
-    if (window.matchMedia("(hover: none)").matches) return;
-
-    const btn = side === "left" ? leftBtnRef.current : rightBtnRef.current;
-    if (!btn) return;
-    const rect = e.currentTarget.getBoundingClientRect();
-    btn.style.left = `${e.clientX - rect.left}px`;
-    btn.style.top = `${e.clientY - rect.top}px`;
-  };
-
   const openVideo = (video: any) => {
     setActiveVideo(video);
     setLightboxOpen(true);
@@ -142,149 +110,96 @@ export default function HeroSection() {
         <div className="h-10" />
 
         {/* Center: Editorial Layout Title with Staggered Cascading */}
-        <div className="flex-1 flex flex-col justify-center items-center relative lg:mt-[-4vh]">
+        <div className="flex-1 w-full flex justify-center items-center relative lg:mt-[-4vh]">
+          {/* Scaling Wrapper */}
+          <div
+            className="relative flex flex-col items-start w-full max-w-[1200px] justify-center"
+            style={{
+              transform: 'scale(min(1, 100vw / 1200))',
+              transformOrigin: 'center center',
+            }}
+          >
 
-          <div className="relative z-30 w-full flex flex-col items-center pointer-events-none">
-
-            <div className="relative flex flex-col items-start text-left">
-
-              {/* Left Parallax Card - Anchored internally to the typography container */}
-              <div
-                className="parallax-left absolute w-[30vw] aspect-[3/4] rounded-2xl overflow-hidden shadow-2xl animate-fade-in z-20 border border-brand-cream/10 transition-transform duration-700 ease-out isolate pointer-events-auto"
-                style={{
-                  top: "0%",
-                  left: "-18%",
-                  animationDelay: "0.5s",
-                  transform: "translate(10px, -10px) rotate(-6deg)",
-                  willChange: "transform",
-                  WebkitMaskImage: "-webkit-radial-gradient(white, black)",
-                  cursor: "none",
-                }}
-                onClick={() => openVideo(heroVideos.left)}
-                onMouseEnter={() => handleCardEnter("left")}
-                onMouseLeave={() => handleCardLeave("left")}
-                onMouseMove={(e) => handleCardMove(e, "left")}
-              >
-                <img
-                  ref={leftImgRef}
-                  src={portfolio2}
-                  alt=""
-                  className="w-full h-full object-cover"
-                  style={{
-                    backfaceVisibility: "hidden",
-                    transform: "translateZ(0)",
-                    transition: "filter 0.5s ease, scale 0.5s ease",
-                    filter: "grayscale(100%) contrast(110%)",
-                    scale: "1",
-                  }}
-                />
-                <div
-                  ref={leftBtnRef}
-                  className="absolute pointer-events-none rounded-full"
-                  style={{
-                    width: "clamp(48px, 5vw, 64px)", height: "clamp(48px, 5vw, 64px)",
-                    left: "50%", top: "50%",
-                    transform: "translate(-50%, -50%)",
-                    opacity: 0.7,
-                    transition: "opacity 0.25s ease, left 0.1s ease-out, top 0.1s ease-out",
-                    background: "linear-gradient(145deg, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.04) 100%)",
-                    backdropFilter: "blur(20px) saturate(180%)",
-                    WebkitBackdropFilter: "blur(20px) saturate(180%)",
-                    border: "1px solid rgba(255,255,255,0.4)",
-                    boxShadow: "0 2px 16px rgba(0,0,0,0.2), inset 0 1.5px 0 rgba(255,255,255,0.55), inset 0 -1px 0 rgba(255,255,255,0.08)",
-                  }}
-                >
-                  <div className="absolute inset-0 rounded-full" style={{ background: "linear-gradient(155deg, rgba(255,255,255,0.3) 0%, transparent 40%)" }} />
-                  <div className="w-full h-full flex items-center justify-center">
-                    <Play size={20} className="text-white relative z-10 drop-shadow" style={{ marginLeft: 2 }} fill="currentColor" />
-                  </div>
+            <div
+              className="parallax-left absolute top-[4%] md:top-[10%] left-[0%] md:left-[-20%] w-[35vw] md:w-[20vw] aspect-[3/4] rounded-2xl overflow-hidden shadow-2xl animate-fade-in z-20 border border-brand-cream/10 transition-transform duration-700 ease-out group cursor-pointer isolate"
+              style={{
+                animationDelay: "0.5s",
+                transform: "translate(10px, -10px) rotate(-6deg)",
+                willChange: "transform",
+                WebkitMaskImage: "-webkit-radial-gradient(white, black)" // Force hardware clipping
+              }}
+              onClick={() => openVideo(heroVideos.left)}
+            >
+              <img
+                src={portfolio2}
+                alt=""
+                className="w-full h-full object-cover grayscale-[100%] contrast-[110%] group-hover:grayscale-0 group-hover:scale-105 transition-all duration-1000"
+                style={{ backfaceVisibility: "hidden", transform: "translateZ(0)" }}
+              />
+              <div className="absolute inset-0 bg-brand-dark/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-center justify-center">
+                <div className="w-16 h-16 rounded-full border border-brand-cream/40 bg-brand-cream/10 backdrop-blur-sm flex items-center justify-center transform scale-90 group-hover:scale-100 transition-transform duration-500">
+                  <Play size={24} className="text-brand-cream ml-1" fill="currentColor" />
                 </div>
               </div>
+            </div>
 
-              {/* Right Color Image - Anchored internally to the typography container */}
-              <div
-                className="parallax-right absolute w-[36vw] aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl animate-fade-in z-20 border border-brand-cream/10 transition-transform duration-700 ease-out isolate pointer-events-auto"
-                style={{
-                  top: "20%",
-                  right: "-20%",
-                  transform: "translate(-15px, 5px) rotate(3deg)",
-                  willChange: "transform",
-                  WebkitMaskImage: "-webkit-radial-gradient(white, black)",
-                  cursor: "none",
-                }}
-                onClick={() => openVideo(heroVideos.right)}
-                onMouseEnter={() => handleCardEnter("right")}
-                onMouseLeave={() => handleCardLeave("right")}
-                onMouseMove={(e) => handleCardMove(e, "right")}
-              >
-                <img
-                  ref={rightImgRef}
-                  src={portfolio1}
-                  alt=""
-                  className="w-full h-full object-cover"
-                  style={{
-                    backfaceVisibility: "hidden",
-                    transform: "translateZ(0)",
-                    transition: "filter 0.5s ease, scale 0.5s ease",
-                    filter: "grayscale(10%)",
-                    scale: "1",
-                  }}
-                />
-                <div
-                  ref={rightBtnRef}
-                  className="absolute pointer-events-none rounded-full"
-                  style={{
-                    width: "clamp(56px, 6vw, 80px)", height: "clamp(56px, 6vw, 80px)",
-                    left: "50%", top: "50%",
-                    transform: "translate(-50%, -50%)",
-                    opacity: 0.7,
-                    transition: "opacity 0.25s ease, left 0.1s ease-out, top 0.1s ease-out",
-                    background: "linear-gradient(145deg, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.04) 100%)",
-                    backdropFilter: "blur(20px) saturate(180%)",
-                    WebkitBackdropFilter: "blur(20px) saturate(180%)",
-                    border: "1px solid rgba(255,255,255,0.4)",
-                    boxShadow: "0 2px 16px rgba(0,0,0,0.2), inset 0 1.5px 0 rgba(255,255,255,0.55), inset 0 -1px 0 rgba(255,255,255,0.08)",
-                  }}
-                >
-                  <div className="absolute inset-0 rounded-full" style={{ background: "linear-gradient(155deg, rgba(255,255,255,0.3) 0%, transparent 40%)" }} />
-                  <div className="w-full h-full flex items-center justify-center">
-                    <Play size={24} className="text-white relative z-10 drop-shadow" style={{ marginLeft: 3 }} fill="currentColor" />
-                  </div>
+            {/* Right Color Image: Shifted further right */}
+            <div
+              className="parallax-right absolute top-[5%] md:top-[12%] right-[-10%] md:right-[-20%] w-[45vw] md:w-[28vw] aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl animate-fade-in z-10 border border-brand-cream/10 transition-transform duration-700 ease-out group cursor-pointer isolate"
+              style={{
+                transform: "translate(-15px, 5px) rotate(3deg)",
+                willChange: "transform",
+                WebkitMaskImage: "-webkit-radial-gradient(white, black)" // Force hardware clipping
+              }}
+              onClick={() => openVideo(heroVideos.right)}
+            >
+              <img
+                src={portfolio1}
+                alt=""
+                className="w-full h-full object-cover grayscale-[10%] group-hover:grayscale-0 group-hover:scale-105 transition-all duration-1000"
+                style={{ backfaceVisibility: "hidden", transform: "translateZ(0)" }}
+              />
+              <div className="absolute inset-0 bg-brand-dark/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-center justify-center">
+                <div className="w-20 h-20 rounded-full border border-brand-cream/40 bg-brand-cream/10 backdrop-blur-sm flex items-center justify-center transform scale-90 group-hover:scale-100 transition-transform duration-500">
+                  <Play size={30} className="text-brand-cream ml-1" fill="currentColor" />
                 </div>
               </div>
+            </div>
 
-              {/* Staggered text (Using responsive VW only, no breakpoints) */}
+            <div className="relative z-30 w-full flex flex-col pointer-events-none">
+              {/* Title stagger effect with softer drop-shadow for overlap readability */}
               <h1
-                className="font-serif text-[10vw] text-brand-cream font-extrabold leading-[0.82] tracking-tight animate-fade-up drop-shadow-[0_2px_15px_rgba(0,0,0,0.4)] relative z-30 pointer-events-none"
+                className="font-serif text-[12vw] md:text-[8.5vw] lg:text-[7.5vw] text-brand-cream font-extrabold leading-[0.82] tracking-tight animate-fade-up drop-shadow-[0_2px_15px_rgba(0,0,0,0.4)] pointer-events-auto"
                 style={{ animationDelay: "0.2s" }}
               >
                 Cinematic
               </h1>
 
               <h2
-                className="font-serif text-[10vw] text-brand-cream font-extrabold leading-[0.82] tracking-tight animate-fade-up mt-1 md:mt-2 ml-[10vw] drop-shadow-[0_2px_15px_rgba(0,0,0,0.4)] relative z-30 pointer-events-none"
+                className="font-serif text-[12vw] md:text-[8.5vw] lg:text-[7.5vw] text-brand-cream font-extrabold leading-[0.82] tracking-tight animate-fade-up mt-1 md:mt-2 ml-[8vw] md:ml-[12vw] drop-shadow-[0_2px_15px_rgba(0,0,0,0.4)] pointer-events-auto"
                 style={{ animationDelay: "0.4s" }}
               >
                 Wedding
               </h2>
 
-              <div className="flex flex-col animate-fade-up mt-1 md:mt-2 ml-[35vw] relative z-30 pointer-events-none" style={{ animationDelay: "0.6s" }}>
-                <h2 className="font-serif text-[10vw] text-brand-cream font-extrabold leading-[0.82] tracking-tight drop-shadow-[0_2px_15px_rgba(0,0,0,0.4)]">
+              <div className="flex flex-col items-start animate-fade-up mt-1 md:mt-2 ml-[20vw] md:ml-[35vw] pointer-events-auto" style={{ animationDelay: "0.6s" }}>
+                <h2 className="font-serif text-[12vw] md:text-[8.5vw] lg:text-[7.5vw] text-brand-cream font-extrabold leading-[0.82] tracking-tight drop-shadow-[0_2px_15px_rgba(0,0,0,0.4)]">
                   Films
                 </h2>
               </div>
-            </div>
 
-            <div className="w-full flex justify-center mt-8 md:mt-12 animate-fade-in" style={{ animationDelay: "1.2s" }}>
-              <span className="font-script text-brand-sand text-[11vw] md:text-7xl lg:text-8xl drop-shadow-[0_4px_20px_rgba(0,0,0,0.4)] block leading-none whitespace-nowrap">
-                That Feel Like You
-              </span>
+              {/* Script phrase centered horizontally below the cascade */}
+              <div className="w-full flex justify-center mt-8 md:mt-12 animate-fade-in pointer-events-auto" style={{ animationDelay: "1.2s" }}>
+                <span className="font-script text-brand-sand text-5xl md:text-7xl lg:text-8xl drop-shadow-[0_4px_20px_rgba(0,0,0,0.4)] block leading-none whitespace-nowrap">
+                  That Feel Like You
+                </span>
+              </div>
             </div>
           </div>
         </div>
 
         {/* Bottom Bar: Clean Layout */}
-        <div className="relative z-30 w-full flex flex-col md:flex-row items-end justify-between gap-4 lg:gap-8 animate-fade-in" style={{ animationDelay: "1.2s" }}>
+        <div className="w-full flex flex-col md:flex-row items-end justify-between gap-8 md:gap-0 animate-fade-in" style={{ animationDelay: "1.2s" }}>
 
           <div className="max-w-[320px]">
             <p className="font-sans text-brand-cream/60 text-[10px] uppercase tracking-[0.2em] leading-relaxed">
@@ -304,47 +219,49 @@ export default function HeroSection() {
       </div>
 
       {/* Video Lightbox (Reusing styles from Portfolio) */}
-      {lightboxOpen && activeVideo && (
-        <div
-          className="fixed inset-0 z-[100] bg-brand-dark/96 flex items-center justify-center p-4 animate-fade-in"
-          onClick={closeVideo}
-        >
-          <button
-            className="absolute top-6 right-6 text-brand-cream/70 hover:text-brand-cream transition-colors z-[110]"
+      {
+        lightboxOpen && activeVideo && (
+          <div
+            className="fixed inset-0 z-[100] bg-brand-dark/96 flex items-center justify-center p-4 animate-fade-in"
             onClick={closeVideo}
-            aria-label="Close"
           >
-            <X size={32} />
-          </button>
+            <button
+              className="absolute top-6 right-6 text-brand-cream/70 hover:text-brand-cream transition-colors z-[110]"
+              onClick={closeVideo}
+              aria-label="Close"
+            >
+              <X size={32} />
+            </button>
 
-          <div className="w-full max-w-5xl" onClick={(e) => e.stopPropagation()}>
-            {activeVideo.vimeoId ? (
-              <div className="relative aspect-video w-full bg-brand-burgundy overflow-hidden rounded-2xl shadow-2xl border border-brand-cream/10 animate-scale-in">
-                <iframe
-                  src={`https://player.vimeo.com/video/${activeVideo.vimeoId}?autoplay=1&title=0&byline=0&portrait=0`}
-                  className="absolute inset-0 w-full h-full"
-                  frameBorder="0"
-                  allow="autoplay; fullscreen; picture-in-picture"
-                  allowFullScreen
-                ></iframe>
+            <div className="w-full max-w-5xl" onClick={(e) => e.stopPropagation()}>
+              {activeVideo.vimeoId ? (
+                <div className="relative aspect-video w-full bg-brand-burgundy overflow-hidden rounded-2xl shadow-2xl border border-brand-cream/10 animate-scale-in">
+                  <iframe
+                    src={`https://player.vimeo.com/video/${activeVideo.vimeoId}?autoplay=1&title=0&byline=0&portrait=0`}
+                    className="absolute inset-0 w-full h-full"
+                    frameBorder="0"
+                    allow="autoplay; fullscreen; picture-in-picture"
+                    allowFullScreen
+                  ></iframe>
+                </div>
+              ) : (
+                <div className="relative aspect-video w-full bg-black rounded-2xl border border-brand-cream/10 overflow-hidden shadow-2xl animate-scale-in">
+                  <video
+                    src={activeVideo.videoUrl}
+                    className="absolute inset-0 w-full h-full object-cover"
+                    autoPlay
+                    controls
+                    playsInline
+                  />
+                </div>
+              )}
+              <div className="mt-6 text-center animate-fade-up" style={{ animationDelay: "0.3s" }}>
+                <p className="font-serif text-brand-cream text-2xl font-extrabold uppercase tracking-widest">{activeVideo.title}</p>
               </div>
-            ) : (
-              <div className="relative aspect-video w-full bg-black rounded-2xl border border-brand-cream/10 overflow-hidden shadow-2xl animate-scale-in">
-                <video
-                  src={activeVideo.videoUrl}
-                  className="absolute inset-0 w-full h-full object-cover"
-                  autoPlay
-                  controls
-                  playsInline
-                />
-              </div>
-            )}
-            <div className="mt-6 text-center animate-fade-up" style={{ animationDelay: "0.3s" }}>
-              <p className="font-serif text-brand-cream text-2xl font-extrabold uppercase tracking-widest">{activeVideo.title}</p>
             </div>
           </div>
-        </div>
-      )}
-    </section>
+        )
+      }
+    </section >
   );
 }
