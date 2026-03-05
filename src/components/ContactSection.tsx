@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { CheckCircle } from "lucide-react";
 
 type FormData = {
@@ -10,51 +10,52 @@ type FormData = {
   message: string;
 };
 
-const initialForm: FormData = {
-  name: "",
-  email: "",
-  role: "",
-  date: "",
-  projectType: "",
-  message: "",
-};
+const initialForm: FormData = { name: "", email: "", role: "", date: "", projectType: "", message: "" };
 
 export default function ContactSection() {
   const [form, setForm] = useState<FormData>(initialForm);
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const sectionRef = useRef<HTMLElement>(null);
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
-  ) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      setSubmitted(true);
-    }, 1200);
+    setTimeout(() => { setLoading(false); setSubmitted(true); }, 1200);
   };
 
-  const inputClass =
-    "w-full bg-transparent border-0 border-b border-muted-foreground/30 py-4 font-sans text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-foreground transition-colors duration-200";
-
-  const selectClass =
-    "w-full bg-transparent border-0 border-b border-muted-foreground/30 py-4 font-sans text-sm text-foreground focus:outline-none focus:border-foreground transition-colors duration-200 appearance-none cursor-pointer";
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => entries.forEach((e) => { if (e.isIntersecting) e.target.classList.add("visible"); }),
+      { threshold: 0.1 }
+    );
+    sectionRef.current?.querySelectorAll(".reveal").forEach((el) => observer.observe(el));
+    return () => observer.disconnect();
+  }, []);
 
   return (
-    <section id="contact" className="section-dark py-28 md:py-40">
-      <div className="max-w-7xl mx-auto px-6 md:px-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-16 md:gap-24">
+    <section id="contact" ref={sectionRef} className="section-dark py-28 md:py-40 overflow-hidden">
+      <div className="max-w-7xl mx-auto px-6 md:px-12 relative">
+
+        {/* Decorative orb */}
+        <div
+          className="absolute -left-40 top-1/2 -translate-y-1/2 w-96 h-96 rounded-full pointer-events-none"
+          style={{ background: "radial-gradient(circle, hsl(188 41% 25% / 0.5) 0%, transparent 70%)", filter: "blur(60px)" }}
+          aria-hidden="true"
+        />
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-16 md:gap-24 relative">
+
           {/* Left: copy */}
           <div className="reveal">
-            <p className="text-label uppercase tracking-[0.2em] text-brand-sand/60 font-sans text-[10px] mb-4">
+            <p className="text-label uppercase tracking-[0.25em] text-brand-sand/60 font-sans text-[10px] mb-4">
               Contact
             </p>
-            <h2 className="font-serif text-display-md text-brand-cream font-light mb-8 leading-tight">
+            <h2 className="font-serif text-display-md text-brand-cream font-extrabold mb-12 md:mb-16 leading-tight">
               Let's Create Something<br />
               <em className="italic">Timeless</em>
             </h2>
@@ -63,14 +64,19 @@ export default function ContactSection() {
               post-production partner — we'd love to hear from you.
             </p>
 
-            <div className="space-y-4">
+            <div className="space-y-0">
               <div className="divider-dark" />
-              <div className="flex justify-between items-center py-3">
+              <div className="flex justify-between items-center py-4">
                 <span className="font-sans text-[11px] uppercase tracking-widest text-brand-cream/40">Email</span>
-                <span className="font-sans text-sm text-brand-cream">hello@gingerbeerstudio.com</span>
+                <a
+                  href="mailto:hello@gingerbeerstudio.com"
+                  className="font-sans text-sm text-brand-cream hover:text-brand-sand transition-colors"
+                >
+                  hello@gingerbeerstudio.com
+                </a>
               </div>
               <div className="divider-dark" />
-              <div className="flex justify-between items-center py-3">
+              <div className="flex justify-between items-center py-4">
                 <span className="font-sans text-[11px] uppercase tracking-widest text-brand-cream/40">Based In</span>
                 <span className="font-sans text-sm text-brand-cream">United States · Remote Worldwide</span>
               </div>
@@ -83,7 +89,7 @@ export default function ContactSection() {
             {submitted ? (
               <div className="h-full flex flex-col items-start justify-center gap-6 py-12">
                 <CheckCircle size={40} className="text-brand-sand" />
-                <h3 className="font-serif text-display-sm text-brand-cream font-light">
+                <h3 className="font-serif text-display-sm text-brand-cream font-extrabold">
                   We've received your inquiry.
                 </h3>
                 <p className="font-sans text-brand-cream/55 text-sm leading-relaxed max-w-sm">
@@ -97,91 +103,52 @@ export default function ContactSection() {
                 </button>
               </div>
             ) : (
-              <form onSubmit={handleSubmit} className="space-y-8">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
-                  <div>
-                    <input
-                      type="text"
-                      name="name"
-                      placeholder="Your Name"
-                      required
-                      value={form.name}
-                      onChange={handleChange}
-                      className={inputClass}
-                    />
-                  </div>
-                  <div>
-                    <input
-                      type="email"
-                      name="email"
-                      placeholder="Email Address"
-                      required
-                      value={form.email}
-                      onChange={handleChange}
-                      className={inputClass}
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
-                  <div>
-                    <select
-                      name="role"
-                      required
-                      value={form.role}
-                      onChange={handleChange}
-                      className={selectClass}
-                    >
-                      <option value="" disabled>I Am a...</option>
-                      <option value="couple">Couple</option>
-                      <option value="videographer">Videographer</option>
-                    </select>
-                  </div>
-                  <div>
-                    <input
-                      type="text"
-                      name="date"
-                      placeholder="Wedding Date (if known)"
-                      value={form.date}
-                      onChange={handleChange}
-                      className={inputClass}
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <select
-                    name="projectType"
-                    required
-                    value={form.projectType}
-                    onChange={handleChange}
-                    className={selectClass}
-                  >
-                    <option value="" disabled>Project Type</option>
-                    <option value="teaser">Teaser Film</option>
-                    <option value="highlight">Highlight Film</option>
-                    <option value="full">Full Wedding Film</option>
-                    <option value="photo">Photo Retouching</option>
-                    <option value="other">Other / Custom</option>
-                  </select>
-                </div>
-
-                <div>
-                  <textarea
-                    name="message"
-                    placeholder="Tell us about your project, style, and vision..."
-                    required
-                    rows={4}
-                    value={form.message}
-                    onChange={handleChange}
-                    className={`${inputClass} resize-none`}
+              <form onSubmit={handleSubmit} className="space-y-5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                  <input
+                    type="text" name="name" placeholder="Your Name" required
+                    value={form.name} onChange={handleChange}
+                    className="form-input"
+                  />
+                  <input
+                    type="email" name="email" placeholder="Email Address" required
+                    value={form.email} onChange={handleChange}
+                    className="form-input"
                   />
                 </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                  <select name="role" required value={form.role} onChange={handleChange} className="form-input">
+                    <option value="" disabled>I Am a...</option>
+                    <option value="couple">Couple</option>
+                    <option value="videographer">Videographer</option>
+                  </select>
+                  <input
+                    type="text" name="date" placeholder="Wedding Date (if known)"
+                    value={form.date} onChange={handleChange}
+                    className="form-input"
+                  />
+                </div>
+
+                <select name="projectType" required value={form.projectType} onChange={handleChange} className="form-input">
+                  <option value="" disabled>Project Type</option>
+                  <option value="teaser">Teaser Film</option>
+                  <option value="highlight">Highlight Film</option>
+                  <option value="full">Full Wedding Film</option>
+                  <option value="photo">Photo Retouching</option>
+                  <option value="other">Other / Custom</option>
+                </select>
+
+                <textarea
+                  name="message" placeholder="Tell us about your project, style, and vision..."
+                  required rows={4} value={form.message} onChange={handleChange}
+                  className="form-input resize-none"
+                />
 
                 <button
                   type="submit"
                   disabled={loading}
-                  className="inline-flex items-center gap-3 bg-brand-sand text-foreground font-sans text-[11px] uppercase tracking-widest px-8 py-4 hover:bg-brand-sand-dark transition-colors duration-300 font-medium disabled:opacity-60"
+                  className="btn-primary disabled:opacity-60 w-full sm:w-auto justify-center"
                 >
                   {loading ? "Sending..." : "Check Availability"}
                 </button>

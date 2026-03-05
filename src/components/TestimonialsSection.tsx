@@ -1,48 +1,81 @@
+import { useEffect, useRef } from "react";
+
 const testimonials = [
   {
-    quote:
-      "We've watched our highlight film over a hundred times. Every frame feels like a painting — they captured emotions we didn't even know were on camera. Absolutely stunning work.",
+    quote: "We've watched our highlight film over a hundred times. Every frame feels like a painting — they captured emotions we didn't even know were on camera. Absolutely stunning work.",
     name: "Sophia & Marcus",
     role: "Couple · Married in Napa Valley, CA",
     type: "couple",
   },
   {
-    quote:
-      "I've partnered with many editing studios over the years. Ginger Beer is in a different league — fast, communicative, and they truly understand cinematic storytelling. My clients are always blown away.",
+    quote: "I've partnered with many editing studios over the years. Ginger Beer is in a different league — fast, communicative, and they truly understand cinematic storytelling. My clients are always blown away.",
     name: "Jordan Lewis",
     role: "Videographer · Lewis Films, NYC",
     type: "videographer",
   },
 ];
 
-export default function TestimonialsSection() {
+function Stars() {
   return (
-    <section id="testimonials" className="section-cream-deep py-28 md:py-40">
+    <div className="flex gap-1 mb-6">
+      {[...Array(5)].map((_, i) => (
+        <svg key={i} width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+          <path
+            d="M7 1l1.545 3.13L12 4.635l-2.5 2.435.59 3.437L7 8.885l-3.09 1.622.59-3.437L2 4.635l3.455-.505L7 1z"
+            fill="#FCE6CA"
+          />
+        </svg>
+      ))}
+    </div>
+  );
+}
+
+export default function TestimonialsSection() {
+  const sectionRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => entries.forEach((e) => { if (e.isIntersecting) e.target.classList.add("visible"); }),
+      { threshold: 0.1 }
+    );
+    sectionRef.current?.querySelectorAll(".reveal").forEach((el) => observer.observe(el));
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <section id="testimonials" ref={sectionRef} className="section-cream-deep py-28 md:py-40">
       <div className="max-w-7xl mx-auto px-6 md:px-12">
+
         {/* Header */}
-        <div className="mb-10 md:mb-14">
-          <p className="text-label uppercase tracking-[0.2em] text-muted-foreground font-sans text-[10px] mb-4">
+        <div className="mb-12 md:mb-16 reveal">
+          <p className="text-label uppercase tracking-[0.25em] text-muted-foreground font-sans text-[10px] mb-4">
             Testimonials
           </p>
-          <h2 className="font-serif text-display-lg text-foreground font-light">
+          <h2 className="font-serif text-display-lg text-foreground font-extrabold">
             Kind Words
           </h2>
         </div>
 
-        {/* Testimonials grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-border">
+        {/* Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {testimonials.map((t, i) => (
             <div
               key={t.name}
-              className="bg-card p-10 md:p-16 reveal"
+              className={`relative bg-card rounded-2xl p-10 md:p-14 overflow-hidden reveal border border-border`}
               style={{ transitionDelay: `${i * 0.15}s` }}
             >
-              {/* Quotation mark */}
-              <div className="font-serif text-[80px] leading-none text-brand-sand select-none mb-2" aria-hidden="true">
+              {/* Decorative large quote mark */}
+              <div
+                className="absolute top-4 right-6 font-script select-none pointer-events-none"
+                style={{ fontSize: "120px", lineHeight: 1, color: "hsl(34 89% 89% / 0.25)" }}
+                aria-hidden="true"
+              >
                 "
               </div>
 
-              <blockquote className="font-serif text-xl md:text-2xl text-foreground font-light leading-relaxed mb-10 italic">
+              <Stars />
+
+              <blockquote className="font-serif text-xl md:text-2xl text-foreground font-extrabold leading-relaxed mb-10 italic relative z-10">
                 {t.quote}
               </blockquote>
 
@@ -50,11 +83,10 @@ export default function TestimonialsSection() {
 
               <div className="flex items-center gap-4">
                 <div
-                  className={`w-10 h-10 rounded-full flex items-center justify-center font-sans text-[11px] font-medium uppercase ${
-                    t.type === "couple"
-                      ? "bg-brand-sand text-foreground"
-                      : "bg-foreground text-brand-cream"
-                  }`}
+                  className={`w-11 h-11 rounded-full flex items-center justify-center font-sans text-[11px] font-semibold uppercase ${t.type === "couple"
+                    ? "bg-brand-sand text-brand-dark"
+                    : "bg-brand-dark text-brand-cream"
+                    }`}
                 >
                   {t.name.split(" ")[0][0]}
                   {t.type === "couple" ? t.name.split("& ")[1]?.[0] : t.name.split(" ")[1]?.[0]}

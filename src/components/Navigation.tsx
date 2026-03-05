@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import logoHorizontal from "@/assets/logo-horizontal.png";
+import logoLight from "@/assets/logo-vector.svg";
+import logoDark from "@/assets/logo-vector-dark.svg";
 
 const navLinks = [
   { label: "Portfolio", href: "#portfolio" },
@@ -21,32 +22,27 @@ export default function Navigation() {
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-        scrolled ? "nav-scrolled" : "nav-top"
-      }`}
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 animate-fade-down ${scrolled ? "nav-scrolled" : "nav-top"
+        }`}
     >
       <nav className="max-w-7xl mx-auto px-6 md:px-12 h-16 md:h-20 flex items-center justify-between">
         {/* Logo */}
-        <a href="#" className="flex items-center shrink-0">
+        <a href="#" className="flex items-center self-center shrink-0 leading-none">
           <img
-            src={logoHorizontal}
+            src={scrolled ? logoDark : logoLight}
             alt="Ginger Beer Films"
-            className={`h-7 md:h-8 w-auto transition-all duration-500 ${
-              scrolled ? "opacity-100" : "opacity-90"
-            }`}
-            style={{ filter: scrolled ? "none" : "brightness(0) invert(1)" }}
+            className="h-10 md:h-11 w-auto block transition-all duration-500 -translate-y-[1px] md:-translate-y-[2px]"
           />
         </a>
 
         {/* Desktop links */}
-        <ul className="hidden md:flex items-center gap-8">
+        <ul className="hidden md:flex items-center self-center gap-8">
           {navLinks.map((link) => (
-            <li key={link.label}>
+            <li key={link.label} className="flex items-center">
               <a
                 href={link.href}
-                className={`text-label uppercase tracking-widest font-sans text-[11px] font-medium transition-colors duration-300 hover:opacity-70 ${
-                  scrolled ? "text-foreground" : "text-brand-cream"
-                }`}
+                className={`nav-link text-label uppercase tracking-widest font-sans text-[11px] font-medium transition-colors duration-300 ${scrolled ? "text-foreground" : "text-brand-cream"
+                  }`}
               >
                 {link.label}
               </a>
@@ -56,14 +52,13 @@ export default function Navigation() {
 
         {/* CTA */}
         <a
-          href="#contact"
-          className={`hidden md:inline-flex items-center gap-2 text-[11px] uppercase tracking-widest font-sans font-medium border px-5 py-2.5 transition-all duration-300 hover:opacity-80 ${
-            scrolled
-              ? "border-foreground text-foreground hover:bg-foreground hover:text-background"
-              : "border-brand-cream text-brand-cream hover:bg-brand-cream hover:text-foreground"
-          }`}
+          href="#book"
+          className={`hidden md:inline-flex items-center self-center gap-2 text-[11px] uppercase tracking-widest font-sans font-medium px-5 py-2.5 rounded-full border transition-all duration-300 ${scrolled
+            ? "border-brand-burgundy text-brand-burgundy hover:bg-brand-burgundy hover:text-brand-cream"
+            : "border-brand-cream text-brand-cream hover:bg-brand-cream/10 hover:border-brand-cream"
+            }`}
         >
-          Check Availability
+          Book a Call
         </a>
 
         {/* Mobile hamburger */}
@@ -72,34 +67,38 @@ export default function Navigation() {
           onClick={() => setMenuOpen(!menuOpen)}
           aria-label="Toggle menu"
         >
-          <span className={`block w-6 h-px bg-current transition-all ${menuOpen ? "rotate-45 translate-y-2" : ""}`} />
-          <span className={`block w-6 h-px bg-current transition-all ${menuOpen ? "opacity-0" : ""}`} />
-          <span className={`block w-6 h-px bg-current transition-all ${menuOpen ? "-rotate-45 -translate-y-2" : ""}`} />
+          <span className={`block w-6 h-px bg-current transition-all duration-300 ${menuOpen ? "rotate-45 translate-y-2" : ""}`} />
+          <span className={`block w-6 h-px bg-current transition-all duration-300 ${menuOpen ? "opacity-0 scale-x-0" : ""}`} />
+          <span className={`block w-6 h-px bg-current transition-all duration-300 ${menuOpen ? "-rotate-45 -translate-y-2" : ""}`} />
         </button>
       </nav>
 
-      {/* Mobile menu */}
-      {menuOpen && (
-        <div className="md:hidden section-cream border-t border-border px-6 py-8 flex flex-col gap-6">
+      {/* Mobile menu — animated slide-down */}
+      <div
+        className={`md:hidden overflow-hidden transition-all duration-400 ease-in-out ${menuOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
+          }`}
+        style={{ background: "rgba(250, 238, 233, 0.97)", backdropFilter: "blur(16px)" }}
+      >
+        <div className="px-6 py-8 flex flex-col gap-5 border-t border-border">
           {navLinks.map((link) => (
             <a
               key={link.label}
               href={link.href}
               onClick={() => setMenuOpen(false)}
-              className="text-label uppercase tracking-widest font-sans text-[12px] font-medium text-foreground"
+              className="nav-link text-label uppercase tracking-widest font-sans text-[12px] font-medium text-foreground w-fit"
             >
               {link.label}
             </a>
           ))}
           <a
-            href="#contact"
+            href="#book"
             onClick={() => setMenuOpen(false)}
-            className="inline-flex items-center gap-2 text-[11px] uppercase tracking-widest font-sans font-medium border border-foreground text-foreground px-5 py-2.5 w-fit"
+            className="btn-outline-dark w-fit mt-2"
           >
-            Check Availability
+            Book a Call
           </a>
         </div>
-      )}
+      </div>
     </header>
   );
 }

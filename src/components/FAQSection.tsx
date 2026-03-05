@@ -35,11 +35,11 @@ export default function FAQSection() {
     <section id="faq" className="section-cream py-28 md:py-40">
       <div className="max-w-5xl mx-auto px-6 md:px-12">
         {/* Header */}
-        <div className="mb-10 md:mb-12">
+        <div className="mb-12 md:mb-16">
           <p className="text-label uppercase tracking-[0.2em] text-muted-foreground font-sans text-[10px] mb-4">
             FAQ
           </p>
-          <h2 className="font-serif text-display-lg text-foreground font-light">
+          <h2 className="font-serif text-display-lg text-foreground font-extrabold">
             Common Questions
           </h2>
         </div>
@@ -55,7 +55,7 @@ export default function FAQSection() {
                   onClick={() => setOpenIndex(isOpen ? null : i)}
                   aria-expanded={isOpen}
                 >
-                  <span className="font-serif text-xl md:text-2xl text-foreground font-light group-hover:text-brand-teal transition-colors duration-200 pr-8">
+                  <span className="font-serif text-xl md:text-2xl text-foreground font-extrabold group-hover:text-brand-teal transition-colors duration-200 pr-8">
                     {faq.q}
                   </span>
                   <div className="shrink-0 w-8 h-8 rounded-full border border-border flex items-center justify-center transition-all duration-200 group-hover:border-foreground">
@@ -68,9 +68,8 @@ export default function FAQSection() {
                 </button>
 
                 <div
-                  className={`overflow-hidden transition-all duration-500 ease-in-out ${
-                    isOpen ? "max-h-60 pb-7" : "max-h-0"
-                  }`}
+                  className={`overflow-hidden transition-all duration-500 ease-in-out ${isOpen ? "max-h-60 pb-7" : "max-h-0"
+                    }`}
                 >
                   <p className="font-sans text-muted-foreground text-sm leading-relaxed max-w-2xl">
                     {faq.a}

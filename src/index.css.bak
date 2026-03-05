@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&family=Montserrat+Alternates:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300;1,400;1,700;1,800&family=Pinyon+Script&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=Montserrat+Alternates:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Pinyon+Script&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -73,7 +73,7 @@
   body {
     background-color: hsl(var(--background));
     color: hsl(var(--foreground));
-    font-family: 'Lora', Georgia, serif;
+    font-family: 'Montserrat Alternates', system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
   }
 
@@ -81,8 +81,7 @@
   h2,
   h3,
   h4 {
-    font-family: 'Montserrat Alternates', system-ui, sans-serif;
-    font-weight: 800;
+    font-family: 'Lora', Georgia, serif;
   }
 }
 
@@ -90,16 +89,15 @@
 
   /* ── Typography ── */
   .font-serif {
-    font-family: 'Montserrat Alternates', system-ui, sans-serif;
+    font-family: 'Lora', Georgia, serif;
   }
 
   .font-sans {
-    font-family: 'Lora', Georgia, serif;
+    font-family: 'Montserrat Alternates', system-ui, sans-serif;
   }
 
   .font-script {
     font-family: 'Pinyon Script', cursive;
-    font-weight: 400;
   }
 
   /* ── Brand color shorthands ── */
@@ -157,11 +155,6 @@
 
   .border-brand-teal {
     border-color: hsl(var(--teal));
-  }
-
-  .vertical-text {
-    writing-mode: vertical-rl;
-    text-orientation: mixed;
   }
 
   /* ── Section backgrounds ── */
@@ -265,7 +258,6 @@
     background: rgba(250, 238, 233, 0.93);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    box-shadow: 0 4px 32px rgba(11, 44, 49, 0.06);
   }
 
   .nav-top {
@@ -295,9 +287,9 @@
   /* ── Hero ── */
   .hero-overlay {
     background: linear-gradient(to bottom,
-        rgba(10, 5, 8, 0.99) 0%,
-        rgba(8, 2, 4, 0.97) 55%,
-        rgba(5, 2, 3, 1) 100%);
+        rgba(11, 44, 49, 0.45) 0%,
+        rgba(11, 44, 49, 0.25) 55%,
+        rgba(11, 44, 49, 0.70) 100%);
   }
 
   /* Animated gradient orbs */
@@ -309,18 +301,13 @@
   }
 
   .orb-1 {
-    background: radial-gradient(circle, hsl(34 89% 89% / 0.15) 0%, transparent 70%);
+    background: radial-gradient(circle, hsl(34 89% 89% / 0.35) 0%, transparent 70%);
     animation-delay: 0s;
   }
 
   .orb-2 {
-    background: radial-gradient(circle, hsl(339 38% 20% / 0.4) 0%, transparent 70%);
+    background: radial-gradient(circle, hsl(188 41% 25% / 0.45) 0%, transparent 70%);
     animation-delay: -3s;
-  }
-
-  .orb-3 {
-    background: radial-gradient(circle, hsl(17 62% 95% / 0.1) 0%, transparent 70%);
-    animation-delay: -6s;
   }
 
   .orb-3 {
@@ -421,9 +408,9 @@
     display: inline-flex;
     align-items: center;
     gap: 10px;
-    background: hsl(var(--cream));
-    color: hsl(var(--burgundy));
-    font-family: 'Lora', Georgia, serif;
+    background: hsl(var(--sand));
+    color: hsl(var(--dark));
+    font-family: 'Montserrat Alternates', system-ui, sans-serif;
     font-size: 11px;
     font-weight: 500;
     text-transform: uppercase;
@@ -435,17 +422,17 @@
 
   .btn-primary:hover {
     transform: scale(1.04);
-    box-shadow: 0 8px 24px hsl(var(--cream) / 0.3);
-    background: #fff;
+    box-shadow: 0 8px 24px hsl(34 89% 89% / 0.5);
+    background: hsl(34 80% 83%);
   }
 
   .btn-outline-light {
     display: inline-flex;
     align-items: center;
     gap: 10px;
-    border: 1.5px solid hsl(var(--cream));
+    border: 1.5px solid rgba(250, 238, 233, 0.55);
     color: hsl(var(--cream));
-    font-family: 'Lora', Georgia, serif;
+    font-family: 'Montserrat Alternates', system-ui, sans-serif;
     font-size: 11px;
     font-weight: 500;
     text-transform: uppercase;
@@ -456,7 +443,7 @@
   }
 
   .btn-outline-light:hover {
-    border-color: #fff;
+    border-color: hsl(var(--cream));
     background: rgba(250, 238, 233, 0.1);
     transform: scale(1.04);
   }
@@ -467,7 +454,7 @@
     gap: 10px;
     border: 1.5px solid hsl(var(--dark));
     color: hsl(var(--dark));
-    font-family: 'Lora', Georgia, serif;
+    font-family: 'Montserrat Alternates', system-ui, sans-serif;
     font-size: 11px;
     font-weight: 500;
     text-transform: uppercase;
@@ -506,7 +493,7 @@
     border: 1.5px solid hsl(188 35% 22%);
     border-radius: 10px;
     padding: 14px 18px;
-    font-family: 'Lora', Georgia, serif;
+    font-family: 'Montserrat Alternates', system-ui, sans-serif;
     font-size: 14px;
     color: hsl(var(--cream));
     transition: border-color 0.2s, background 0.2s;
