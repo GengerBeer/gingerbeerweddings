@@ -23,7 +23,7 @@ const Index = () => {
             Portfolio
           </p>
           <h1 className="text-4xl font-bold tracking-tight text-foreground md:text-5xl lg:text-6xl">
-            Our works
+            Ginger Beer Weddings
           </h1>
           <div className="mx-auto mt-4 h-1 w-16 rounded-full bg-primary/40" />
         </div>
