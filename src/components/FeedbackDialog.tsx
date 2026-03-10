@@ -188,7 +188,7 @@ const FeedbackDialog = () => {
             />
             <label htmlFor="terms" className="text-xs text-muted-foreground leading-relaxed">
               I agree to the{" "}
-              <a href="/terms" target="_blank" className="underline text-foreground hover:text-accent transition-colors">
+              <a href="/terms" className="underline text-foreground hover:text-accent transition-colors">
                 Terms & Conditions
               </a>{" "}
               and consent to being contacted by Ginger Beer Weddings.
