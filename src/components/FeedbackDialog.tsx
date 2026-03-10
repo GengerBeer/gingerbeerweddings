@@ -138,8 +138,8 @@ const FeedbackDialog = () => {
             </Label>
             <div className="space-y-2">
               {[
-                "Highlight Film (3–5 min)",
-                "Full Wedding Film",
+                "Highlight Film (8–15 min)",
+                "Full Wedding Film (20–60 min)",
                 "Highlight + Full Film",
                 "Not sure yet",
               ].map((option) => (
