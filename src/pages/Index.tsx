@@ -1,12 +1,9 @@
 import FeedbackDialog from "@/components/FeedbackDialog";
 
 const videos = [
-  "https://www.youtube.com/embed/dQw4w9WgXcQ",
-  "https://www.youtube.com/embed/jNQXAC9IVRw",
-  "https://www.youtube.com/embed/9bZkp7q19f0",
-  "https://www.youtube.com/embed/kJQP7kiw5Fk",
-  "https://www.youtube.com/embed/RgKAFK5djSk",
-  "https://www.youtube.com/embed/JGwWNGJdvx8",
+  { id: "1172102287", title: "Ramon and Marloes" },
+  { id: "1171939262", title: "Wedding Film 2" },
+  { id: "1172093193", title: "Wedding Film 3" },
 ];
 
 const Index = () => {
@@ -29,16 +26,16 @@ const Index = () => {
         </div>
 
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {videos.map((src, i) => (
+          {videos.map((video, i) => (
             <div
               key={i}
               className="group rounded-2xl overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl"
             >
               <div className="aspect-video overflow-hidden rounded-xl">
                 <iframe
-                  src={src}
-                  title={`Video ${i + 1}`}
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  src={`https://player.vimeo.com/video/${video.id}?badge=0&autopause=0&player_id=0&app_id=58479`}
+                  title={video.title}
+                  allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media"
                   allowFullScreen
                   className="h-full w-full"
                 />
