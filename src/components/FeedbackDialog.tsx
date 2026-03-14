@@ -27,11 +27,13 @@ const FeedbackDialog = () => {
     setLoading(true);
 
     try {
-      await fetch("https://script.google.com/macros/s/AKfycbxfbftcGwb8MXKxH52aVSn6Gz2hQ98fc9hqT6ngyUQe7N9P7x__pQUlk9HZ4aIh6tnQcw/exec", {
+      // Fire and forget — CORS блокирует ответ но данные доходят
+      fetch("https://script.google.com/macros/s/AKfycbxfbftcGwb8MXKxH52aVSn6Gz2hQ98fc9hqT6ngyUQe7N9P7x__pQUlk9HZ4aIh6tnQcw/exec", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        mode: "no-cors",
+        headers: { "Content-Type": "text/plain" },
         body: JSON.stringify({ name, email, wedding_date: date, package: package_, message }),
-      });
+      }).catch(() => {});
 
       toast.success("Thank you! We'll be in touch soon 🎬");
       setName("");
