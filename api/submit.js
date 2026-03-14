@@ -18,10 +18,17 @@ export default async function handler(req, res) {
 
     const scriptUrl = "https://script.google.com/macros/s/AKfycbxfbftcGwb8MXKxH52aVSn6Gz2hQ98fc9hqT6ngyUQe7N9P7x__pQUlk9HZ4aIh6tnQcw/exec";
 
-    const response = await fetch(scriptUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email, wedding_date, package: pkg, message }),
+    // Отправляем через GET с параметрами — не теряется при редиректе
+    const params = new URLSearchParams({
+      name: name || "",
+      email: email || "",
+      wedding_date: wedding_date || "",
+      package: pkg || "",
+      message: message || "",
+    });
+
+    const response = await fetch(`${scriptUrl}?${params.toString()}`, {
+      method: "GET",
       redirect: "follow",
     });
 
