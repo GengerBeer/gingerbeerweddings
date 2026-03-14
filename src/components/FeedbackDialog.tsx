@@ -26,28 +26,23 @@ const FeedbackDialog = () => {
     e.preventDefault();
     setLoading(true);
 
-    try {
-      // Fire and forget — CORS блокирует ответ но данные доходят
-      fetch("https://script.google.com/macros/s/AKfycbxfbftcGwb8MXKxH52aVSn6Gz2hQ98fc9hqT6ngyUQe7N9P7x__pQUlk9HZ4aIh6tnQcw/exec", {
-        method: "POST",
-        mode: "no-cors",
-        headers: { "Content-Type": "text/plain" },
-        body: JSON.stringify({ name, email, wedding_date: date, package: package_, message }),
-      }).catch(() => {});
+    // Fire and forget — не ждём ответа из-за CORS
+    fetch("https://script.google.com/macros/s/AKfycbxfbftcGwb8MXKxH52aVSn6Gz2hQ98fc9hqT6ngyUQe7N9P7x__pQUlk9HZ4aIh6tnQcw/exec", {
+      method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "text/plain" },
+      body: JSON.stringify({ name, email, wedding_date: date, package: package_, message }),
+    }).catch(() => {});
 
-      toast.success("Thank you! We'll be in touch soon 🎬");
-      setName("");
-      setEmail("");
-      setDate("");
-      setPackage("");
-      setMessage("");
-      setTerms(false);
-      setOpen(false);
-    } catch {
-      toast.error("Something went wrong. Please try again.");
-    } finally {
-      setLoading(false);
-    }
+    toast.success("Thank you! We'll be in touch soon 🎬");
+    setName("");
+    setEmail("");
+    setDate("");
+    setPackage("");
+    setMessage("");
+    setTerms(false);
+    setOpen(false);
+    setLoading(false);
   };
 
   return (
