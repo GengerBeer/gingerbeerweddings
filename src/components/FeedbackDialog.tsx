@@ -26,37 +26,30 @@ const FeedbackDialog = () => {
     e.preventDefault();
     setLoading(true);
 
-    const formData = {
-      access_key: "8e3ce2bf-3bd5-4955-8ec4-9d832658c8f9",
-      name,
-      email,
-      wedding_date: date,
-      package: package_,
-      message,
-      subject: `New inquiry from ${name} — Ginger Beer Weddings`,
-    };
-
     try {
-      const res = await fetch("https://api.web3forms.com/submit", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+      const formBody = new URLSearchParams({
+        name,
+        email,
+        wedding_date: date,
+        package: package_,
+        message,
       });
 
-      const data = await res.json();
+      await fetch("https://script.google.com/a/macros/gingerbeerweddings.com/s/AKfycbxfbftcGwb8MXKxH52aVSn6Gz2hQ98fc9hqT6ngyUQe7N9P7x__pQUlk9HZ4aIh6tnQcw/exec", {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: formBody.toString(),
+      });
 
-      if (data.success) {
-        toast.success("Thank you! We'll be in touch soon 🎬");
-        setName("");
-        setEmail("");
-        setDate("");
-        setPackage("");
-        setMessage("");
-        setTerms(false);
-        setOpen(false);
-      } else {
-        toast.error("Something went wrong. Please try again.");
-      }
+      toast.success("Thank you! We'll be in touch soon 🎬");
+      setName("");
+      setEmail("");
+      setDate("");
+      setPackage("");
+      setMessage("");
+      setTerms(false);
+      setOpen(false);
     } catch {
       toast.error("Something went wrong. Please try again.");
     } finally {
