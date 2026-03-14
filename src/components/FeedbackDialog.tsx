@@ -27,7 +27,7 @@ const FeedbackDialog = () => {
     setLoading(true);
 
     try {
-      const formBody = new URLSearchParams({
+      const params = new URLSearchParams({
         name,
         email,
         wedding_date: date,
@@ -35,11 +35,9 @@ const FeedbackDialog = () => {
         message,
       });
 
-      await fetch("https://script.google.com/a/macros/gingerbeerweddings.com/s/AKfycbxfbftcGwb8MXKxH52aVSn6Gz2hQ98fc9hqT6ngyUQe7N9P7x__pQUlk9HZ4aIh6tnQcw/exec", {
-        method: "POST",
+      await fetch(`https://script.google.com/a/macros/gingerbeerweddings.com/s/AKfycbxfbftcGwb8MXKxH52aVSn6Gz2hQ98fc9hqT6ngyUQe7N9P7x__pQUlk9HZ4aIh6tnQcw/exec?${params.toString()}`, {
+        method: "GET",
         mode: "no-cors",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: formBody.toString(),
       });
 
       toast.success("Thank you! We'll be in touch soon 🎬");
