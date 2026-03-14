@@ -27,17 +27,10 @@ const FeedbackDialog = () => {
     setLoading(true);
 
     try {
-      const params = new URLSearchParams({
-        name,
-        email,
-        wedding_date: date,
-        package: package_,
-        message,
-      });
-
-      await fetch(`https://script.google.com/macros/s/AKfycbxfbftcGwb8MXKxH52aVSn6Gz2hQ98fc9hqT6ngyUQe7N9P7x__pQUlk9HZ4aIh6tnQcw/exec?${params.toString()}`, {
-        method: "GET",
-        mode: "no-cors",
+      await fetch("https://script.google.com/macros/s/AKfycbxfbftcGwb8MXKxH52aVSn6Gz2hQ98fc9hqT6ngyUQe7N9P7x__pQUlk9HZ4aIh6tnQcw/exec", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, wedding_date: date, package: package_, message }),
       });
 
       toast.success("Thank you! We'll be in touch soon 🎬");
