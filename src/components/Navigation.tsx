@@ -36,7 +36,7 @@ export default function Navigation() {
         </a>
 
         {/* Desktop links */}
-        <ul className="hidden md:flex items-center self-center gap-8">
+        <ul className="hidden lg:flex items-center self-center gap-8">
           {navLinks.map((link) => (
             <li key={link.label} className="flex items-center">
               <a
@@ -53,7 +53,7 @@ export default function Navigation() {
         {/* CTA */}
         <a
           href="#book"
-          className={`hidden md:inline-flex items-center self-center gap-2 text-[11px] uppercase tracking-widest font-sans font-medium px-5 py-2.5 rounded-full border transition-all duration-300 ${scrolled
+          className={`hidden lg:inline-flex items-center self-center gap-2 text-[11px] uppercase tracking-widest font-sans font-medium px-5 py-2.5 rounded-full border transition-all duration-300 ${scrolled
             ? "border-brand-dark text-brand-dark hover:bg-brand-dark hover:text-brand-cream"
             : "border-brand-cream text-brand-cream hover:bg-brand-cream/10 hover:border-brand-cream"
             }`}
@@ -63,7 +63,7 @@ export default function Navigation() {
 
         {/* Mobile hamburger */}
         <button
-          className={`md:hidden flex flex-col gap-1.5 ${scrolled ? "text-foreground" : "text-brand-cream"}`}
+          className={`lg:hidden flex flex-col gap-1.5 ${scrolled ? "text-foreground" : "text-brand-cream"}`}
           onClick={() => setMenuOpen(!menuOpen)}
           aria-label="Toggle menu"
         >
@@ -75,7 +75,7 @@ export default function Navigation() {
 
       {/* Mobile menu — animated slide-down */}
       <div
-        className={`md:hidden overflow-hidden transition-all duration-400 ease-in-out ${menuOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
+        className={`lg:hidden overflow-hidden transition-all duration-400 ease-in-out ${menuOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
           }`}
         style={{ background: "rgba(250, 238, 233, 0.97)", backdropFilter: "blur(16px)" }}
       >

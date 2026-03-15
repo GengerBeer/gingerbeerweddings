@@ -139,10 +139,10 @@ export default function HeroSection() {
         <div className="h-10" />
 
         {/* Center: Editorial Layout Title with Staggered Cascading */}
-        <div className="flex-1 flex flex-col justify-center items-start relative lg:mt-[-4vh]">
+        <div className="flex-1 flex flex-col justify-center items-center relative lg:mt-[-4vh]">
 
           <div
-            className="parallax-left absolute top-[4%] md:top-[10%] left-[-15%] md:left-[-20%] w-[35vw] md:w-[20vw] aspect-[3/4] rounded-2xl overflow-hidden shadow-2xl animate-fade-in z-20 border border-brand-cream/10 hidden md:block transition-transform duration-700 ease-out isolate"
+            className="parallax-left absolute top-[15%] md:top-[10%] left-0 lg:left-[-10%] xl:left-[-15%] 2xl:left-[-20%] w-[25vw] md:w-[22vw] lg:w-[20vw] aspect-[3/4] rounded-2xl overflow-hidden shadow-2xl animate-fade-in z-20 border border-brand-cream/10 hidden md:block transition-transform duration-700 ease-out isolate"
             style={{
               animationDelay: "0.5s",
               transform: "translate(10px, -10px) rotate(-6deg)",
@@ -193,7 +193,7 @@ export default function HeroSection() {
 
           {/* Right Color Image */}
           <div
-            className="parallax-right absolute top-[5%] md:top-[12%] right-[-10%] md:right-[-20%] w-[45vw] md:w-[28vw] aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl animate-fade-in z-20 border border-brand-cream/10 hidden md:block transition-transform duration-700 ease-out isolate"
+            className="parallax-right absolute top-[25%] md:top-[12%] right-0 lg:right-[-10%] xl:right-[-15%] 2xl:right-[-20%] w-[32vw] md:w-[28vw] lg:w-[28vw] aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl animate-fade-in z-20 border border-brand-cream/10 hidden md:block transition-transform duration-700 ease-out isolate"
             style={{
               transform: "translate(-15px, 5px) rotate(3deg)",
               willChange: "transform",
@@ -241,59 +241,68 @@ export default function HeroSection() {
             </div>
           </div>
 
-          <div className="relative z-30 w-full flex flex-col pointer-events-none">
-            <h1
-              className="font-serif text-[12vw] md:text-[8.5vw] lg:text-[7.5vw] text-brand-cream font-extrabold leading-[0.82] tracking-tight animate-fade-up drop-shadow-[0_2px_15px_rgba(0,0,0,0.4)]"
-              style={{ animationDelay: "0.2s" }}
-            >
-              Cinematic
-            </h1>
+          <div className="relative z-30 w-full flex flex-col items-center pointer-events-none text-left">
+            <div className="mx-auto flex flex-col items-start w-fit">
+              <h1
+                className="font-serif text-[15vw] md:text-[10vw] lg:text-[8.5vw] text-brand-cream font-extrabold leading-[0.82] tracking-tight animate-fade-up drop-shadow-[0_2px_15px_rgba(0,0,0,0.4)]"
+                style={{ animationDelay: "0.2s" }}
+              >
+                Cinematic
+              </h1>
 
-            <h2
-              className="font-serif text-[12vw] md:text-[8.5vw] lg:text-[7.5vw] text-brand-cream font-extrabold leading-[0.82] tracking-tight animate-fade-up mt-1 md:mt-2 ml-[8vw] md:ml-[12vw] drop-shadow-[0_2px_15px_rgba(0,0,0,0.4)]"
-              style={{ animationDelay: "0.4s" }}
-            >
-              Wedding
-            </h2>
+              <h2
+                className="font-serif text-[15vw] md:text-[10vw] lg:text-[8.5vw] text-brand-cream font-extrabold leading-[0.82] tracking-tight animate-fade-up mt-1 lg:mt-2 ml-[12vw] md:ml-[10vw] lg:ml-[15vw] drop-shadow-[0_2px_15px_rgba(0,0,0,0.4)]"
+                style={{ animationDelay: "0.4s" }}
+              >
+                Wedding
+              </h2>
 
-            <div className="flex flex-col items-start animate-fade-up mt-1 md:mt-2 ml-[20vw] md:ml-[35vw]" style={{ animationDelay: "0.6s" }}>
-              <h2 className="font-serif text-[12vw] md:text-[8.5vw] lg:text-[7.5vw] text-brand-cream font-extrabold leading-[0.82] tracking-tight drop-shadow-[0_2px_15px_rgba(0,0,0,0.4)]">
+              <h2
+                className="font-serif text-[15vw] md:text-[10vw] lg:text-[8.5vw] text-brand-cream font-extrabold leading-[0.82] tracking-tight animate-fade-up mt-1 lg:mt-2 ml-[24vw] md:ml-[26vw] lg:ml-[35vw] drop-shadow-[0_2px_15px_rgba(0,0,0,0.4)]"
+                style={{ animationDelay: "0.6s" }}
+              >
                 Films
               </h2>
             </div>
 
-            <div className="w-full flex justify-center mt-8 md:mt-12 animate-fade-in" style={{ animationDelay: "1.2s" }}>
-              <span className="font-script text-brand-sand text-5xl md:text-7xl lg:text-8xl drop-shadow-[0_4px_20px_rgba(0,0,0,0.4)] block leading-none whitespace-nowrap">
+            <div className="w-full flex justify-center mt-8 lg:mt-12 animate-fade-in" style={{ animationDelay: "1.2s" }}>
+              <span className="font-script text-brand-sand text-5xl md:text-6xl lg:text-8xl drop-shadow-[0_4px_20px_rgba(0,0,0,0.4)] block leading-none whitespace-nowrap">
                 That Feel Like You
               </span>
             </div>
 
-            {/* Mobile-only Images (simplified layout) */}
-            <div className="md:hidden flex gap-4 mt-8">
-              <div className="w-1/2 aspect-square rounded-lg overflow-hidden shadow-xl rotate-1 border border-brand-cream/10">
-                <img src={portfolio1} alt="" className="w-full h-full object-cover grayscale-[10%]" />
-              </div>
-              <div className="w-1/2 aspect-square rounded-lg overflow-hidden shadow-xl -rotate-1 mt-4 border border-brand-cream/10">
+            {/* Mobile-only Images (simplified vertical layout) */}
+            <div className="md:hidden flex w-full max-w-sm mx-auto justify-between gap-4 mt-12 pointer-events-auto">
+              <div 
+                className="w-1/2 aspect-[3/4] rounded-lg overflow-hidden shadow-xl -rotate-2 border border-brand-cream/10 cursor-pointer"
+                onClick={() => openVideo(heroVideos.left)}
+              >
                 <img src={portfolio2} alt="" className="w-full h-full object-cover grayscale-[100%]" />
+              </div>
+              <div 
+                className="w-1/2 aspect-[4/3] rounded-lg overflow-hidden shadow-xl rotate-3 mt-8 border border-brand-cream/10 cursor-pointer"
+                onClick={() => openVideo(heroVideos.right)}
+              >
+                <img src={portfolio1} alt="" className="w-full h-full object-cover grayscale-[10%]" />
               </div>
             </div>
           </div>
         </div>
 
         {/* Bottom Bar: Clean Layout */}
-        <div className="w-full flex flex-col md:flex-row items-end justify-between gap-8 md:gap-0 animate-fade-in" style={{ animationDelay: "1.2s" }}>
+        <div className="w-full flex flex-col md:flex-row items-center md:items-end justify-between gap-6 md:gap-0 animate-fade-in text-center md:text-left mt-8 md:mt-0" style={{ animationDelay: "1.2s" }}>
 
           <div className="max-w-[320px]">
-            <p className="font-sans text-brand-cream/60 text-[10px] uppercase tracking-[0.2em] leading-relaxed">
+            <p className="font-sans text-brand-cream/60 text-[10px] uppercase tracking-[0.2em] leading-relaxed mx-auto md:mx-0">
               We craft emotional, timeless wedding edits for modern couples and filmmakers worldwide.
             </p>
           </div>
 
-          <div className="flex flex-row items-center gap-4">
-            <a href="#portfolio" className="btn-primary py-3 px-8 text-[11px]">
+          <div className="flex flex-row items-center justify-center gap-4 w-full md:w-auto">
+            <a href="#portfolio" className="btn-primary py-3 px-6 md:px-8 text-[11px] whitespace-nowrap">
               View Our Work
             </a>
-            <a href="#contact" className="btn-outline-light py-3 px-8 text-[11px]">
+            <a href="#contact" className="btn-outline-light py-3 px-6 md:px-8 text-[11px] whitespace-nowrap">
               Get in Touch
             </a>
           </div>
