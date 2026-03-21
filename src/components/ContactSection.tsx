@@ -1,36 +1,76 @@
 import { useState, useEffect, useRef } from "react";
 import { CheckCircle } from "lucide-react";
 
+// Replace with your deployed Apps Script URL
+const APPS_SCRIPT_URL = import.meta.env.VITE_APPS_SCRIPT_URL || "https://script.google.com/macros/s/AKfycbzWixYNgnseRYU1qmkqRhiyNYorOrQQW7X5mlqJe4MxVevvyl7iBbK7DmN2FLMZNMAs_Q/exec";
+
 type FormData = {
   name: string;
   email: string;
   role: string;
-  date: string;
-  projectType: string;
+  wedding_date: string;
+  package: string;
   message: string;
 };
 
-const initialForm: FormData = { name: "", email: "", role: "", date: "", projectType: "", message: "" };
+const initialForm: FormData = {
+  name: "",
+  email: "",
+  role: "",
+  wedding_date: "",
+  package: "",
+  message: "",
+};
 
 export default function ContactSection() {
   const [form, setForm] = useState<FormData>(initialForm);
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const sectionRef = useRef<HTMLElement>(null);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setTimeout(() => { setLoading(false); setSubmitted(true); }, 1200);
+    setError(null);
+
+    try {
+      const res = await fetch(APPS_SCRIPT_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+
+      const data = await res.json();
+
+      if (!data.success) {
+        throw new Error(data.error || "Something went wrong");
+      }
+
+      setSubmitted(true);
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Failed to send. Please try again or email us directly."
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
     const observer = new IntersectionObserver(
-      (entries) => entries.forEach((e) => { if (e.isIntersecting) e.target.classList.add("visible"); }),
+      (entries) =>
+        entries.forEach((e) => {
+          if (e.isIntersecting) e.target.classList.add("visible");
+        }),
       { threshold: 0.1 }
     );
     sectionRef.current?.querySelectorAll(".reveal").forEach((el) => observer.observe(el));
@@ -44,7 +84,10 @@ export default function ContactSection() {
         {/* Decorative orb */}
         <div
           className="absolute -left-40 top-1/2 -translate-y-1/2 w-96 h-96 rounded-full pointer-events-none"
-          style={{ background: "radial-gradient(circle, hsl(188 41% 25% / 0.5) 0%, transparent 70%)", filter: "blur(60px)" }}
+          style={{
+            background: "radial-gradient(circle, hsl(188 41% 25% / 0.5) 0%, transparent 70%)",
+            filter: "blur(60px)",
+          }}
           aria-hidden="true"
         />
 
@@ -67,18 +110,24 @@ export default function ContactSection() {
             <div className="space-y-0">
               <div className="divider-dark" />
               <div className="flex justify-between items-center py-4">
-                <span className="font-sans text-[11px] uppercase tracking-widest text-brand-cream/40">Email</span>
+                <span className="font-sans text-[11px] uppercase tracking-widest text-brand-cream/40">
+                  Email
+                </span>
                 <a
-                  href="mailto:hello@gingerbeerstudio.com"
+                  href="mailto:hello@gingerbeerweddings.com"
                   className="font-sans text-sm text-brand-cream hover:text-brand-sand transition-colors"
                 >
-                  hello@gingerbeerstudio.com
+                  hello@gingerbeerweddings.com
                 </a>
               </div>
               <div className="divider-dark" />
               <div className="flex justify-between items-center py-4">
-                <span className="font-sans text-[11px] uppercase tracking-widest text-brand-cream/40">Based In</span>
-                <span className="font-sans text-sm text-brand-cream">United States · Remote Worldwide</span>
+                <span className="font-sans text-[11px] uppercase tracking-widest text-brand-cream/40">
+                  Based In
+                </span>
+                <span className="font-sans text-sm text-brand-cream">
+                  United States · Remote Worldwide
+                </span>
               </div>
               <div className="divider-dark" />
             </div>
@@ -96,7 +145,10 @@ export default function ContactSection() {
                   Thank you for reaching out. We'll be in touch within 48 hours to discuss your project.
                 </p>
                 <button
-                  onClick={() => { setSubmitted(false); setForm(initialForm); }}
+                  onClick={() => {
+                    setSubmitted(false);
+                    setForm(initialForm);
+                  }}
                   className="font-sans text-[11px] uppercase tracking-widest text-brand-sand border-b border-brand-sand/40 pb-0.5 hover:border-brand-sand transition-colors"
                 >
                   Send Another Message
@@ -106,44 +158,75 @@ export default function ContactSection() {
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   <input
-                    type="text" name="name" placeholder="Your Name" required
-                    value={form.name} onChange={handleChange}
+                    type="text"
+                    name="name"
+                    placeholder="Your Name"
+                    required
+                    value={form.name}
+                    onChange={handleChange}
                     className="form-input"
                   />
                   <input
-                    type="email" name="email" placeholder="Email Address" required
-                    value={form.email} onChange={handleChange}
+                    type="email"
+                    name="email"
+                    placeholder="Email Address"
+                    required
+                    value={form.email}
+                    onChange={handleChange}
                     className="form-input"
                   />
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                  <select name="role" required value={form.role} onChange={handleChange} className="form-input">
+                  <select
+                    name="role"
+                    required
+                    value={form.role}
+                    onChange={handleChange}
+                    className="form-input"
+                  >
                     <option value="" disabled>I Am a...</option>
                     <option value="couple">Couple</option>
                     <option value="videographer">Videographer</option>
                   </select>
                   <input
-                    type="text" name="date" placeholder="Wedding Date (if known)"
-                    value={form.date} onChange={handleChange}
+                    type="text"
+                    name="wedding_date"
+                    placeholder="Wedding Date (if known)"
+                    value={form.wedding_date}
+                    onChange={handleChange}
                     className="form-input"
                   />
                 </div>
 
-                <select name="projectType" required value={form.projectType} onChange={handleChange} className="form-input">
+                <select
+                  name="package"
+                  required
+                  value={form.package}
+                  onChange={handleChange}
+                  className="form-input"
+                >
                   <option value="" disabled>Project Type</option>
-                  <option value="teaser">Teaser Film</option>
-                  <option value="highlight">Highlight Film</option>
-                  <option value="full">Full Wedding Film</option>
-                  <option value="photo">Photo Retouching</option>
-                  <option value="other">Other / Custom</option>
+                  <option value="Teaser Film">Teaser Film</option>
+                  <option value="Highlight Film">Highlight Film</option>
+                  <option value="Full Wedding Film">Full Wedding Film</option>
+                  <option value="Photo Retouching">Photo Retouching</option>
+                  <option value="Other / Custom">Other / Custom</option>
                 </select>
 
                 <textarea
-                  name="message" placeholder="Tell us about your project, style, and vision..."
-                  required rows={4} value={form.message} onChange={handleChange}
+                  name="message"
+                  placeholder="Tell us about your project, style, and vision..."
+                  required
+                  rows={4}
+                  value={form.message}
+                  onChange={handleChange}
                   className="form-input resize-none"
                 />
+
+                {error && (
+                  <p className="font-sans text-sm text-red-400">{error}</p>
+                )}
 
                 <button
                   type="submit"
