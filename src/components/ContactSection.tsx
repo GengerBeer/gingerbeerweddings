@@ -222,7 +222,7 @@ export default function ContactSection() {
           </div>
 
           {/* ── Right: form ── */}
-          <div className="reveal reveal-delay-2" style={{ paddingTop: '5.5rem' }}>
+          <div className="reveal reveal-delay-2" style={{ paddingTop: '2rem' }}>
             {submitted ? (
               /* ── Success ── */
               <div className="h-full flex flex-col items-start justify-center gap-6 py-12">
