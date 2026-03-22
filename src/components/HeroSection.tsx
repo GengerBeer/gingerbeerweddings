@@ -267,7 +267,7 @@ export default function HeroSection() {
 
             <div className="w-full flex justify-center mt-8 lg:mt-12 animate-fade-in" style={{ animationDelay: "1.2s" }}>
               <span className="font-script text-brand-sand text-5xl md:text-6xl lg:text-8xl drop-shadow-[0_4px_20px_rgba(0,0,0,0.4)] block leading-none whitespace-nowrap">
-                That Feel Like You
+                we edit. you book another wedding.
               </span>
             </div>
 
@@ -292,18 +292,18 @@ export default function HeroSection() {
         {/* Bottom Bar: Clean Layout */}
         <div className="w-full flex flex-col md:flex-row items-center md:items-end justify-between gap-6 md:gap-0 animate-fade-in text-center md:text-left mt-8 md:mt-0" style={{ animationDelay: "1.2s" }}>
 
-          <div className="max-w-[320px]">
+          <div className="max-w-[340px]">
             <p className="font-sans text-brand-cream/60 text-[10px] uppercase tracking-[0.2em] leading-relaxed mx-auto md:mx-0">
-              We craft emotional, timeless wedding edits for modern couples and filmmakers worldwide.
+              Every wedding you outsource to us is a weekend back with your family — or another $3K booking on your calendar.
             </p>
           </div>
 
           <div className="flex flex-row items-center justify-center gap-4 w-full md:w-auto">
-            <a href="#portfolio" className="btn-primary py-3 px-6 md:px-8 text-[11px] whitespace-nowrap">
-              View Our Work
+            <a href="#contact" className="btn-primary py-3 px-6 md:px-8 text-[11px] whitespace-nowrap">
+              Get Your Free Test Edit
             </a>
-            <a href="#contact" className="btn-outline-light py-3 px-6 md:px-8 text-[11px] whitespace-nowrap">
-              Get in Touch
+            <a href="#portfolio" className="btn-outline-light py-3 px-6 md:px-8 text-[11px] whitespace-nowrap">
+              See Our Work
             </a>
           </div>
         </div>

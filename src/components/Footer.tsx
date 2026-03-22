@@ -57,7 +57,7 @@ export default function Footer() {
               style={{ filter: "brightness(0) saturate(100%) invert(85%) sepia(15%) saturate(500%) hue-rotate(5deg)" }}
             />
             <p className="font-sans text-brand-cream/40 text-sm leading-relaxed max-w-xs">
-              Wedding post-production studio crafting cinematic films for modern couples and filmmakers across the US.
+              Post-production for wedding filmmakers. Fast edits. Clean grades. Zero drama.
             </p>
             {/* Socials */}
             <div className="flex gap-4 mt-2">
@@ -92,16 +92,16 @@ export default function Footer() {
           <div className="flex flex-col gap-4 md:items-end">
             <p className="font-sans text-[10px] uppercase tracking-[0.25em] text-brand-cream/25 mb-2">Get In Touch</p>
             <a
-              href="mailto:hello@gingerbeerstudio.com"
+              href="mailto:hello@gingerbeerweddings.com"
               className="font-sans text-sm text-brand-cream/50 hover:text-brand-cream transition-colors"
             >
-              hello@gingerbeerstudio.com
+              hello@gingerbeerweddings.com
             </a>
             <a
               href="#contact"
               className="btn-primary mt-4"
             >
-              Check Availability
+              Free Test Edit
             </a>
           </div>
         </div>
@@ -113,7 +113,7 @@ export default function Footer() {
             © {new Date().getFullYear()} Ginger Beer Films. All rights reserved.
           </p>
           <p className="font-sans text-[11px] text-brand-cream/20 uppercase tracking-widest">
-            United States · Remote Worldwide
+            EU · Remote Worldwide
           </p>
         </div>
       </div>
