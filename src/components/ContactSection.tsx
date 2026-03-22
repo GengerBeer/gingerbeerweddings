@@ -195,12 +195,11 @@ export default function ContactSection() {
               Contact
             </p>
             <h2 className="font-serif text-display-md text-brand-cream font-extrabold mb-12 md:mb-16 leading-tight">
-              Let's Create Something<br />
-              <em className="italic">Timeless</em>
+              Let's Make Something<br />
+              <em className="italic">Sparkling.</em>
             </h2>
             <p className="font-sans text-brand-cream/55 text-sm leading-relaxed mb-12 max-w-sm">
-              Whether you're a couple planning your wedding or a filmmaker looking for a dedicated
-              post-production partner — we'd love to hear from you.
+              Got footage? Got a deadline? Want to see what we can do with your material before committing? Tell us. We’ll be back within 24 hours.
             </p>
 
             <div className="space-y-0">
