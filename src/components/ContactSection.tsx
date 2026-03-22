@@ -60,16 +60,16 @@ const ServiceCheckbox = ({
   onChange: () => void;
 }) => (
   <label
-    className={`flex items-center gap-4 cursor-pointer rounded-xl border px-4 py-3 transition-all duration-200 ${
+    className={`flex items-center gap-4 cursor-pointer rounded-xl border px-4 py-3 transition-all duration-200 select-none ${
       checked
         ? "border-brand-sand/60 bg-brand-sand/10"
         : "border-brand-cream/10 hover:border-brand-sand/30"
     }`}
   >
     {/* Custom checkbox */}
+    <input type="checkbox" checked={checked} onChange={onChange} className="sr-only" />
     <div
-      onClick={onChange}
-      className={`flex-shrink-0 w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all duration-200 ${
+      className={`flex-shrink-0 w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all duration-200 pointer-events-none ${
         checked
           ? "border-brand-sand bg-brand-sand/20"
           : "border-brand-cream/30 bg-transparent"
@@ -187,7 +187,7 @@ export default function ContactSection() {
           aria-hidden="true"
         />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-16 md:gap-24 relative">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-16 md:gap-24 relative items-center">
 
           {/* ── Left: copy ── */}
           <div className="reveal">
