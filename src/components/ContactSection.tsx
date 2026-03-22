@@ -1,65 +1,9 @@
-import { useState, useEffect, useRef } from "react";
-import { CheckCircle } from "lucide-react";
-
-const APPS_SCRIPT_URL =
-  import.meta.env.VITE_APPS_SCRIPT_URL ||
-  "https://script.google.com/macros/s/AKfycbzWixYNgnseRYU1qmkqRhiyNYorOrQQW7X5mlqJe4MxVevvyl7iBbK7DmN2FLMZNMAs_Q/exec";
-
-type FormData = {
-  name: string;
-  email: string;
-  role: string;
-  wedding_date: string;
-  package: string;
-  message: string;
-};
-
-const initialForm: FormData = {
-  name: "",
-  email: "",
-  role: "",
-  wedding_date: "",
-  package: "",
-  message: "",
-};
+import { useEffect, useRef } from "react";
+import { Mail, MapPin } from "lucide-react";
+import FeedbackDialog from "@/components/FeedbackDialog";
 
 export default function ContactSection() {
-  const [form, setForm] = useState<FormData>(initialForm);
-  const [submitted, setSubmitted] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const sectionRef = useRef<HTMLElement>(null);
-
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
-  ) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-
-    try {
-      const res = await fetch(APPS_SCRIPT_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
-      });
-      const data = await res.json();
-      if (!data.success) throw new Error(data.error || "Something went wrong");
-      setSubmitted(true);
-    } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Failed to send. Please email us directly."
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -106,7 +50,10 @@ export default function ContactSection() {
             <div className="space-y-0">
               <div className="divider-dark" />
               <div className="flex justify-between items-center py-4">
-                <span className="font-sans text-[11px] uppercase tracking-widest text-brand-cream/40">Email</span>
+                <div className="flex items-center gap-3">
+                  <Mail size={13} className="text-brand-sand/50" />
+                  <span className="font-sans text-[11px] uppercase tracking-widest text-brand-cream/40">Email</span>
+                </div>
                 <a
                   href="mailto:hello@gingerbeerweddings.com"
                   className="font-sans text-sm text-brand-cream hover:text-brand-sand transition-colors"
@@ -116,101 +63,29 @@ export default function ContactSection() {
               </div>
               <div className="divider-dark" />
               <div className="flex justify-between items-center py-4">
-                <span className="font-sans text-[11px] uppercase tracking-widest text-brand-cream/40">Based In</span>
+                <div className="flex items-center gap-3">
+                  <MapPin size={13} className="text-brand-sand/50" />
+                  <span className="font-sans text-[11px] uppercase tracking-widest text-brand-cream/40">Based In</span>
+                </div>
                 <span className="font-sans text-sm text-brand-cream">United States · Remote Worldwide</span>
               </div>
               <div className="divider-dark" />
             </div>
           </div>
 
-          {/* Right: form */}
-          <div className="reveal reveal-delay-2">
-            {submitted ? (
-              <div className="h-full flex flex-col items-start justify-center gap-6 py-12">
-                <CheckCircle size={40} className="text-brand-sand" />
-                <h3 className="font-serif text-display-sm text-brand-cream font-extrabold">
-                  We've received your inquiry.
-                </h3>
-                <p className="font-sans text-brand-cream/55 text-sm leading-relaxed max-w-sm">
-                  Thank you for reaching out. We'll be in touch within 48 hours to discuss your project.
-                </p>
-                <button
-                  onClick={() => { setSubmitted(false); setForm(initialForm); }}
-                  className="font-sans text-[11px] uppercase tracking-widest text-brand-sand border-b border-brand-sand/40 pb-0.5 hover:border-brand-sand transition-colors"
-                >
-                  Send Another Message
-                </button>
-              </div>
-            ) : (
-              <form onSubmit={handleSubmit} className="space-y-5">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                  <input
-                    type="text" name="name" placeholder="Your Name" required
-                    value={form.name} onChange={handleChange}
-                    className="form-input"
-                  />
-                  <input
-                    type="email" name="email" placeholder="Email Address" required
-                    value={form.email} onChange={handleChange}
-                    className="form-input"
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                  <select
-                    name="role" required value={form.role}
-                    onChange={handleChange} className="form-input"
-                  >
-                    <option value="" disabled>I Am a...</option>
-                    <option value="couple">Couple</option>
-                    <option value="videographer">Videographer</option>
-                  </select>
-                  <input
-                    type="text" name="wedding_date" placeholder="Wedding Date (if known)"
-                    value={form.wedding_date} onChange={handleChange}
-                    className="form-input"
-                  />
-                </div>
-
-                <select
-                  name="package" required value={form.package}
-                  onChange={handleChange} className="form-input"
-                >
-                  <option value="" disabled>Project Type</option>
-                  <option value="Teaser Film">Teaser Film</option>
-                  <option value="Highlight Film">Highlight Film</option>
-                  <option value="Full Wedding Film">Full Wedding Film</option>
-                  <option value="Photo Retouching">Photo Retouching</option>
-                  <option value="Other / Custom">Other / Custom</option>
-                </select>
-
-                <textarea
-                  name="message" placeholder="Tell us about your project, style, and vision..."
-                  required rows={4} value={form.message} onChange={handleChange}
-                  className="form-input resize-none"
-                />
-
-                {error && (
-                  <p className="font-sans text-sm text-red-400">{error}</p>
-                )}
-
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="btn-primary disabled:opacity-60 w-full sm:w-auto justify-center"
-                >
-                  {loading ? (
-                    <span className="flex items-center gap-2">
-                      <span className="w-3.5 h-3.5 rounded-full border-2 border-brand-burgundy/40 border-t-brand-burgundy animate-spin" />
-                      Sending...
-                    </span>
-                  ) : (
-                    "Check Availability"
-                  )}
-                </button>
-              </form>
-            )}
+          {/* Right: CTA + Dialog */}
+          <div className="reveal reveal-delay-2 flex flex-col justify-center gap-8">
+            <p className="font-sans text-brand-cream/55 text-sm leading-relaxed max-w-sm">
+              Ready to start? Tell us about your wedding day and we'll get back to you within 24 hours.
+            </p>
+            <div>
+              <FeedbackDialog />
+            </div>
+            <p className="font-sans text-[11px] uppercase tracking-widest text-brand-cream/25">
+              We respond within 24 hours
+            </p>
           </div>
+
         </div>
       </div>
     </section>
