@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 
 declare global {
   interface Window {
@@ -28,7 +28,16 @@ const videos = [
   { id: "1172335961", title: "Wedding Film 6" },
 ];
 
-const VideoCard = ({ video }: { video: { id: string; title: string } }) => {
+interface VideoCardProps {
+  video: { id: string; title: string };
+  index: number;
+  onPrev: () => void;
+  onNext: () => void;
+  hasPrev: boolean;
+  hasNext: boolean;
+}
+
+const VideoCard = ({ video, index, onPrev, onNext, hasPrev, hasNext }: VideoCardProps) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<VimeoPlayer | null>(null);
@@ -41,6 +50,7 @@ const VideoCard = ({ video }: { video: { id: string; title: string } }) => {
   const [qualities, setQualities] = useState<{ id: string; label: string; active: boolean }[]>([]);
   const [activeQuality, setActiveQuality] = useState("auto");
   const [showQuality, setShowQuality] = useState(false);
+  const [nearEnd, setNearEnd] = useState(false);
 
   useEffect(() => {
     let attempts = 0;
@@ -55,14 +65,29 @@ const VideoCard = ({ video }: { video: { id: string; title: string } }) => {
       playerRef.current = player;
       player.on("play", () => setIsPlaying(true));
       player.on("pause", () => setIsPlaying(false));
-      player.on("timeupdate", ({ percent }) => setProgress(percent * 100));
+      player.on("timeupdate", ({ percent }) => {
+        setProgress(percent * 100);
+        // Show next/prev arrows when 5 seconds remain
+        player.getDuration().then((d) => {
+          setNearEnd(d > 0 && percent * d >= d - 5);
+        });
+      });
       player.getDuration().then((d) => setDuration(d));
       player.getQualities().then((q) => { if (q && q.length) setQualities(q); }).catch(() => {});
       setReady(true);
     };
     init();
 
-    const onFsChange = () => setIsFullscreen(!!document.fullscreenElement);
+    const onFsChange = () => {
+      const fsActive = !!document.fullscreenElement;
+      setIsFullscreen(fsActive);
+      // Stop video when exiting fullscreen
+      if (!fsActive && playerRef.current) {
+        playerRef.current.pause().catch(() => {});
+        setIsPlaying(false);
+        setNearEnd(false);
+      }
+    };
     document.addEventListener("fullscreenchange", onFsChange);
     return () => document.removeEventListener("fullscreenchange", onFsChange);
   }, []);
@@ -101,6 +126,22 @@ const VideoCard = ({ video }: { video: { id: string; title: string } }) => {
     setShowQuality(false);
   };
 
+  const handlePrev = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    playerRef.current?.pause().catch(() => {});
+    setIsPlaying(false);
+    setNearEnd(false);
+    onPrev();
+  }, [onPrev]);
+
+  const handleNext = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    playerRef.current?.pause().catch(() => {});
+    setIsPlaying(false);
+    setNearEnd(false);
+    onNext();
+  }, [onNext]);
+
   return (
     <div
       ref={containerRef}
@@ -128,7 +169,7 @@ const VideoCard = ({ video }: { video: { id: string; title: string } }) => {
           pointerEvents: ready ? "auto" : "none",
         }}
       >
-        {/* Play/Pause — exact center */}
+        {/* Play/Pause — center */}
         <button
           onClick={togglePlay}
           className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/90 hover:bg-white flex items-center justify-center transition-all duration-200 hover:scale-110 shadow-lg"
@@ -144,6 +185,51 @@ const VideoCard = ({ video }: { video: { id: string; title: string } }) => {
             </svg>
           )}
         </button>
+
+        {/* Prev / Next arrows — visible in fullscreen near end OR always in fullscreen */}
+        {isFullscreen && (
+          <>
+            {/* Prev */}
+            {hasPrev && (
+              <button
+                onClick={handlePrev}
+                className={`absolute left-5 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-black/50 hover:bg-black/80 flex items-center justify-center transition-all duration-300 backdrop-blur-sm border border-white/20 ${
+                  nearEnd ? "opacity-100 scale-100" : "opacity-0 group-hover:opacity-70"
+                }`}
+                title="Previous video"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                  <path d="M15 18l-6-6 6-6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </button>
+            )}
+
+            {/* Next */}
+            {hasNext && (
+              <button
+                onClick={handleNext}
+                className={`absolute right-5 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-black/50 hover:bg-black/80 flex items-center justify-center transition-all duration-300 backdrop-blur-sm border border-white/20 ${
+                  nearEnd ? "opacity-100 scale-100" : "opacity-0 group-hover:opacity-70"
+                }`}
+                title="Next video"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                  <path d="M9 18l6-6-6-6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </button>
+            )}
+
+            {/* Near-end label */}
+            {nearEnd && hasNext && (
+              <div className="absolute top-5 right-5 flex items-center gap-2 bg-black/60 backdrop-blur-sm rounded-full px-3 py-1.5 border border-white/10">
+                <span className="text-white/70 text-xs font-sans uppercase tracking-widest">Up next</span>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                  <path d="M9 18l6-6-6-6" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </div>
+            )}
+          </>
+        )}
 
         {/* Bottom controls */}
         <div className="absolute bottom-0 left-0 right-0 px-3 pb-2 flex flex-col gap-1.5">
@@ -228,6 +314,8 @@ const VideoCard = ({ video }: { video: { id: string; title: string } }) => {
 };
 
 export default function PortfolioSection() {
+  const [activeIndex, setActiveIndex] = useState<number | null>(null);
+
   useEffect(() => {
     if (!document.querySelector('script[src*="vimeo.com/api/player"]')) {
       const script = document.createElement("script");
@@ -236,6 +324,23 @@ export default function PortfolioSection() {
       document.head.appendChild(script);
     }
   }, []);
+
+  // When fullscreen closes, reset activeIndex
+  useEffect(() => {
+    const onFsChange = () => {
+      if (!document.fullscreenElement) setActiveIndex(null);
+    };
+    document.addEventListener("fullscreenchange", onFsChange);
+    return () => document.removeEventListener("fullscreenchange", onFsChange);
+  }, []);
+
+  const handlePrev = (index: number) => {
+    if (index > 0) setActiveIndex(index - 1);
+  };
+
+  const handleNext = (index: number) => {
+    if (index < videos.length - 1) setActiveIndex(index + 1);
+  };
 
   return (
     <section id="portfolio" className="section-cream py-28 md:py-40">
@@ -254,7 +359,15 @@ export default function PortfolioSection() {
         {/* Video grid */}
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 reveal">
           {videos.map((video, i) => (
-            <VideoCard key={i} video={video} />
+            <VideoCard
+              key={video.id}
+              video={video}
+              index={i}
+              onPrev={() => handlePrev(i)}
+              onNext={() => handleNext(i)}
+              hasPrev={i > 0}
+              hasNext={i < videos.length - 1}
+            />
           ))}
         </div>
 
