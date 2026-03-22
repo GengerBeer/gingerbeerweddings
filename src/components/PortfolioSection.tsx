@@ -197,16 +197,16 @@ const FullscreenPlayer = ({
           pointerEvents: showControls ? "auto" : "none",
         }}
       >
-        {/* Top: close */}
+        {/* Top: close — same style as fullscreen button on card, but with collapse icon */}
         <div className="flex justify-end px-6 pt-6">
           <button
             onClick={onClose}
             className="inline-flex items-center gap-2 border border-brand-cream/60 text-brand-cream font-sans text-[11px] font-medium uppercase tracking-widest px-4 py-2 rounded-full transition-all duration-300 hover:bg-brand-cream/10 hover:border-brand-cream backdrop-blur-sm"
           >
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="none">
-              <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
+              <path d="M8 3v5H3M21 8h-5V3M3 16h5v5M16 21v-5h5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
-            Close
+            Exit
           </button>
         </div>
 
@@ -279,24 +279,23 @@ const FullscreenPlayer = ({
         </div>
       </div>
 
-      {/* Prev — left edge, styled like Close/Next */}
+      {/* Prev — left edge, appears same as Next (only near start isn't relevant, show with controls) */}
       {hasPrev && (
-        <div
-          className={`absolute left-6 top-1/2 -translate-y-1/2 transition-all duration-500 ${
-            showControls ? "opacity-100" : "opacity-0 pointer-events-none"
-          }`}
-        >
-          <button
-            onClick={onPrev}
-            className="inline-flex items-center gap-2 border border-brand-cream/60 text-brand-cream font-sans text-[11px] font-medium uppercase tracking-widest px-4 py-2 rounded-full transition-all duration-300 hover:bg-brand-cream/10 hover:border-brand-cream backdrop-blur-sm"
-
-          >
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="none">
-              <path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-            Prev
-          </button>
-        </div>
+      <div
+      className={`absolute left-6 top-1/2 -translate-y-1/2 flex flex-col items-center gap-3 transition-all duration-500 ${
+      nearEnd ? "opacity-0 pointer-events-none" : showControls ? "opacity-100" : "opacity-0 pointer-events-none"
+      }`}
+      >
+      <button
+      onClick={onPrev}
+      className="inline-flex items-center gap-2 border border-brand-cream/60 text-brand-cream font-sans text-[11px] font-medium uppercase tracking-widest px-5 py-2.5 rounded-full transition-all duration-300 hover:bg-brand-cream/10 hover:border-brand-cream backdrop-blur-sm"
+      >
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+        <path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      </svg>
+      Prev Film
+      </button>
+      </div>
       )}
 
       {/* Next — right edge, ALWAYS visible (not tied to showControls) */}
@@ -358,6 +357,11 @@ const VideoCard = ({
       cardPlayers.set(index, player);
       player.on("play", () => setIsPlaying(true));
       player.on("pause", () => setIsPlaying(false));
+      player.on("ended", () => {
+        player.setCurrentTime(0).then(() => player.play()).catch(() => {});
+        setProgress(0);
+        currentTimeRef.current = 0;
+      });
       player.on("timeupdate", (data: { seconds: number; percent: number }) => {
         setProgress(data.percent * 100);
         currentTimeRef.current = data.seconds;
