@@ -79,6 +79,12 @@ const FullscreenPlayer = ({
       playerRef.current = player;
       player.on("play", () => setIsPlaying(true));
       player.on("pause", () => setIsPlaying(false));
+      player.on("ended", () => {
+        // Restart video when it ends
+        player.setCurrentTime(0).then(() => player.play()).catch(() => {});
+        setNearEnd(false);
+        setProgress(0);
+      });
       player.on("timeupdate", (data: { seconds: number; duration: number; percent: number }) => {
         setProgress(data.percent * 100);
         setNearEnd(data.duration - data.seconds <= 5 && data.duration > 0);
@@ -196,11 +202,12 @@ const FullscreenPlayer = ({
         <div className="flex justify-end px-6 pt-6">
           <button
             onClick={onClose}
-            className="w-9 h-9 rounded-full bg-black/40 hover:bg-black/70 flex items-center justify-center transition-all border border-white/20 backdrop-blur-sm"
+            className="inline-flex items-center gap-2 border border-brand-cream/60 text-brand-cream font-sans text-[11px] font-medium uppercase tracking-widest px-4 py-2 rounded-full transition-all duration-300 hover:bg-brand-cream/10 hover:border-brand-cream backdrop-blur-sm"
           >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-              <path d="M18 6L6 18M6 6l12 12" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none">
+              <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
             </svg>
+            Close
           </button>
         </div>
 
@@ -273,19 +280,24 @@ const FullscreenPlayer = ({
         </div>
       </div>
 
-      {/* Prev — left edge, always visible with controls */}
+      {/* Prev — left edge, styled like Close/Next */}
       {hasPrev && (
-        <button
-          onClick={onPrev}
-          className={`absolute left-5 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-black/40 hover:bg-black/70 flex items-center justify-center transition-all duration-300 backdrop-blur-sm border border-white/20 hover:border-white/40 ${
+        <div
+          className={`absolute left-6 top-1/2 -translate-y-1/2 transition-all duration-500 ${
             showControls ? "opacity-100" : "opacity-0 pointer-events-none"
           }`}
-          title="Previous (←)"
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-            <path d="M15 18l-6-6 6-6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-        </button>
+          <button
+            onClick={onPrev}
+            className="inline-flex items-center gap-2 border border-brand-cream/60 text-brand-cream font-sans text-[11px] font-medium uppercase tracking-widest px-4 py-2 rounded-full transition-all duration-300 hover:bg-brand-cream/10 hover:border-brand-cream backdrop-blur-sm"
+            title="Previous (←)"
+          >
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none">
+              <path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            Prev
+          </button>
+        </div>
       )}
 
       {/* Next — right edge, ALWAYS visible (not tied to showControls) */}
