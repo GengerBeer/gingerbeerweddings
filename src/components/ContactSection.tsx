@@ -187,7 +187,7 @@ export default function ContactSection() {
           aria-hidden="true"
         />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-16 md:gap-24 relative items-center">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-16 md:gap-24 relative items-start">
 
           {/* ── Left: copy ── */}
           <div className="reveal">
@@ -222,7 +222,7 @@ export default function ContactSection() {
           </div>
 
           {/* ── Right: form ── */}
-          <div className="reveal reveal-delay-2">
+          <div className="reveal reveal-delay-2 md:pt-[11.5rem]">
             {submitted ? (
               /* ── Success ── */
               <div className="h-full flex flex-col items-start justify-center gap-6 py-12">
