@@ -242,32 +242,25 @@ export default function HeroSection() {
           </div>
 
           <div className="relative z-30 w-full flex flex-col items-center pointer-events-none text-left">
-            <div className="mx-auto flex flex-col items-start w-fit">
+            <div className="mx-auto flex flex-col items-center w-full px-4 mb-2 lg:mb-4">
               <h1
-                className="font-serif text-[15vw] md:text-[10vw] lg:text-[8.5vw] text-brand-cream font-extrabold leading-[0.82] tracking-tight animate-fade-up drop-shadow-[0_2px_15px_rgba(0,0,0,0.4)]"
+                className="font-serif text-[9.5vw] sm:text-[8.5vw] md:text-[7vw] lg:text-[5.5vw] xl:text-[5vw] text-brand-cream font-extrabold leading-[1.1] md:leading-[1] tracking-tight animate-fade-up drop-shadow-[0_2px_15px_rgba(0,0,0,0.4)] whitespace-nowrap -translate-x-[4vw] md:-translate-x-[6vw] lg:-translate-x-[8vw]"
                 style={{ animationDelay: "0.2s" }}
               >
-                Cinematic
+                Your Editing Team.
               </h1>
 
               <h2
-                className="font-serif text-[15vw] md:text-[10vw] lg:text-[8.5vw] text-brand-cream font-extrabold leading-[0.82] tracking-tight animate-fade-up mt-1 lg:mt-2 ml-[12vw] md:ml-[10vw] lg:ml-[15vw] drop-shadow-[0_2px_15px_rgba(0,0,0,0.4)]"
+                className="font-serif text-[9.5vw] sm:text-[8.5vw] md:text-[7vw] lg:text-[5.5vw] xl:text-[5vw] text-brand-cream font-extrabold leading-[1] tracking-tight animate-fade-up mt-1 md:mt-2 translate-x-[4vw] md:translate-x-[6vw] lg:translate-x-[8vw] drop-shadow-[0_2px_15px_rgba(0,0,0,0.4)] whitespace-nowrap"
                 style={{ animationDelay: "0.4s" }}
               >
-                Wedding
-              </h2>
-
-              <h2
-                className="font-serif text-[15vw] md:text-[10vw] lg:text-[8.5vw] text-brand-cream font-extrabold leading-[0.82] tracking-tight animate-fade-up mt-1 lg:mt-2 ml-[24vw] md:ml-[26vw] lg:ml-[35vw] drop-shadow-[0_2px_15px_rgba(0,0,0,0.4)]"
-                style={{ animationDelay: "0.6s" }}
-              >
-                Films
+                Without the Salary.
               </h2>
             </div>
 
             <div className="w-full flex justify-center mt-8 lg:mt-12 animate-fade-in" style={{ animationDelay: "1.2s" }}>
-              <span className="font-script text-brand-sand text-5xl md:text-6xl lg:text-8xl drop-shadow-[0_4px_20px_rgba(0,0,0,0.4)] block leading-none whitespace-nowrap">
-                we edit. you book another wedding.
+              <span className="font-script text-brand-sand text-4xl sm:text-5xl md:text-6xl lg:text-8xl drop-shadow-[0_4px_20px_rgba(0,0,0,0.4)] block leading-[1.25] md:leading-none text-center whitespace-normal md:whitespace-nowrap">
+                We edit. <br className="block md:hidden" /> You book another wedding.
               </span>
             </div>
 

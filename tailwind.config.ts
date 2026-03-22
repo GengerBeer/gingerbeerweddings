@@ -12,7 +12,7 @@ export default {
     },
     extend: {
       fontFamily: {
-        serif: ["Montserrat Alternates", "system-ui", "sans-serif"],
+        serif: ["Montserrat", "system-ui", "sans-serif"],
         sans: ["Lora", "Georgia", "serif"],
         script: ["Pinyon Script", "cursive"],
       },

@@ -27,7 +27,7 @@ export default function Navigation() {
       <header className={`fixed top-0 left-0 right-0 z-[60] transition-all duration-500 animate-fade-down ${scrolled ? "nav-scrolled" : "nav-top"} ${menuOpen ? "bg-[#FAEEE9]" : ""}`}>
         <nav className="max-w-7xl mx-auto px-6 md:px-12 h-16 md:h-20 flex items-center justify-between">
           <a href="#" className="flex items-center self-center shrink-0 leading-none relative z-50">
-            <img src={scrolled || menuOpen ? logoDark : logoLight} alt="Ginger Beer Films" className="h-10 md:h-11 w-auto block transition-all duration-500 -translate-y-[1px] md:-translate-y-[2px]" />
+            <img src={scrolled || menuOpen ? logoDark : logoLight} alt="Ginger Beer Films" className="h-[34px] md:h-[38px] w-auto block transition-all duration-500 -translate-y-[1px] md:-translate-y-[2px]" />
           </a>
           <ul className="hidden lg:flex items-center self-center gap-8">
             {navLinks.map((link) => (<li key={link.label} className="flex items-center"><a href={link.href} className={`nav-link text-label uppercase tracking-widest font-sans text-[11px] font-medium transition-colors duration-300 ${scrolled ? "text-foreground" : "text-brand-cream"}`}>{link.label}</a></li>))}

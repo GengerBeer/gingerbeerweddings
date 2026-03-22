@@ -4,6 +4,7 @@ const plans = [
   {
     name: "Teaser + Highlight Bundle",
     price: "$620",
+    oldPrice: "$720",
     badge: "Save $100",
     features: ["60–90 sec teaser + 4–8 min highlight", "Advanced color grading", "Licensed music", "2 revisions included", "14-day delivery"],
     highlight: false,
@@ -12,6 +13,7 @@ const plans = [
   {
     name: "Complete Package",
     price: "$1,200",
+    oldPrice: "$1370",
     badge: "Save $170",
     features: ["Teaser + Highlight + Full Wedding Film", "Multi-camera edit, full day coverage", "Advanced color grading", "2 revisions included", "14-day delivery"],
     highlight: true,
@@ -50,7 +52,14 @@ export default function InvestmentSection() {
               {plan.badge && (<span className="absolute top-5 right-5 font-sans text-[9px] uppercase tracking-widest bg-brand-sand text-brand-dark px-3 py-1 rounded-full">{plan.badge}</span>)}
               <p className={`font-sans text-[10px] uppercase tracking-[0.2em] mb-6 ${plan.highlight ? "text-brand-sand" : "text-muted-foreground"}`}>0{i + 1}</p>
               <h3 className={`font-serif text-display-sm font-extrabold mb-3 ${plan.highlight ? "text-brand-cream" : "text-foreground"}`}>{plan.name}</h3>
-              <p className={`font-sans text-lg font-semibold mb-8 ${plan.highlight ? "text-brand-sand" : "text-brand-teal"}`}>{plan.price}</p>
+              <div className="flex items-baseline gap-2 mb-8">
+                <p className={`font-sans text-lg font-semibold ${plan.highlight ? "text-brand-sand" : "text-brand-teal"}`}>{plan.price}</p>
+                {(plan as any).oldPrice && (
+                  <span className={`font-sans text-sm line-through ${plan.highlight ? "text-brand-cream/50" : "text-muted-foreground/60"}`}>
+                    {(plan as any).oldPrice}
+                  </span>
+                )}
+              </div>
               <div className={`h-px mb-8 ${plan.highlight ? "bg-white/10" : "bg-border"}`} />
               <ul className="space-y-4 flex-1 mb-10">
                 {plan.features.map((f) => (
