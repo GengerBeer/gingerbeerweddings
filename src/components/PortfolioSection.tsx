@@ -200,61 +200,23 @@ const FullscreenPlayer = ({
         {/* Top bar — empty, close moved next to Auto */}
         <div />
 
-        {/* Center: play + loading ring */}
+        {/* Center: play */}
         <div className="flex items-center justify-center">
-          <div className="relative">
-            {/* Loading ring — spins when not playing */}
-            {!isPlaying && (
-              <svg
-                className="absolute inset-0 w-full h-full animate-spin"
-                style={{ animationDuration: "2s" }}
-                viewBox="0 0 56 56"
-                fill="none"
-              >
-                <circle cx="28" cy="28" r="26" stroke="white" strokeWidth="1.5" strokeOpacity="0.15"/>
-                <path
-                  d="M28 2 A26 26 0 0 1 54 28"
-                  stroke="white"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                />
+          <button
+            onClick={togglePlay}
+            className="w-14 h-14 rounded-full bg-white/90 hover:bg-white flex items-center justify-center transition-all duration-200 hover:scale-110 shadow-lg"
+          >
+            {isPlaying ? (
+              <svg width="18" height="18" viewBox="0 0 16 16" fill="none">
+                <rect x="3" y="2" width="4" height="12" rx="1" fill="#1a1a1a"/>
+                <rect x="9" y="2" width="4" height="12" rx="1" fill="#1a1a1a"/>
+              </svg>
+            ) : (
+              <svg width="18" height="18" viewBox="0 0 16 16" fill="none">
+                <path d="M4 2.5L13 8L4 13.5V2.5Z" fill="#1a1a1a"/>
               </svg>
             )}
-            {/* Progress ring — shows playback progress */}
-            {isPlaying && (
-              <svg
-                className="absolute inset-0 w-full h-full -rotate-90"
-                viewBox="0 0 56 56"
-                fill="none"
-              >
-                <circle cx="28" cy="28" r="26" stroke="white" strokeWidth="1.5" strokeOpacity="0.15"/>
-                <circle
-                  cx="28" cy="28" r="26"
-                  stroke="white"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeDasharray={`${2 * Math.PI * 26}`}
-                  strokeDashoffset={`${2 * Math.PI * 26 * (1 - progress / 100)}`}
-                  style={{ transition: "stroke-dashoffset 0.4s linear" }}
-                />
-              </svg>
-            )}
-            <button
-              onClick={togglePlay}
-              className="w-14 h-14 rounded-full bg-white/90 hover:bg-white flex items-center justify-center transition-all duration-200 hover:scale-110 shadow-lg"
-            >
-              {isPlaying ? (
-                <svg width="18" height="18" viewBox="0 0 16 16" fill="none">
-                  <rect x="3" y="2" width="4" height="12" rx="1" fill="#1a1a1a"/>
-                  <rect x="9" y="2" width="4" height="12" rx="1" fill="#1a1a1a"/>
-                </svg>
-              ) : (
-                <svg width="18" height="18" viewBox="0 0 16 16" fill="none">
-                  <path d="M4 2.5L13 8L4 13.5V2.5Z" fill="#1a1a1a"/>
-                </svg>
-              )}
-            </button>
-          </div>
+          </button>
         </div>
 
         {/* Bottom controls */}
@@ -460,39 +422,21 @@ const VideoCard = ({
           pointerEvents: ready ? "auto" : "none",
         }}
       >
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 relative">
-          {/* Loading / progress ring */}
-          {!isPlaying ? (
-            <svg className="absolute inset-0 w-full h-full animate-spin pointer-events-none" style={{ animationDuration: "2s" }} viewBox="0 0 48 48" fill="none">
-              <circle cx="24" cy="24" r="22" stroke="white" strokeWidth="1.5" strokeOpacity="0.15"/>
-              <path d="M24 2 A22 22 0 0 1 46 24" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
+        <button
+          onClick={togglePlay}
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/90 hover:bg-white flex items-center justify-center transition-all duration-200 hover:scale-110 shadow-lg"
+        >
+          {isPlaying ? (
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <rect x="3" y="2" width="4" height="12" rx="1" fill="#1a1a1a"/>
+              <rect x="9" y="2" width="4" height="12" rx="1" fill="#1a1a1a"/>
             </svg>
           ) : (
-            <svg className="absolute inset-0 w-full h-full -rotate-90 pointer-events-none" viewBox="0 0 48 48" fill="none">
-              <circle cx="24" cy="24" r="22" stroke="white" strokeWidth="1.5" strokeOpacity="0.15"/>
-              <circle cx="24" cy="24" r="22" stroke="white" strokeWidth="1.5" strokeLinecap="round"
-                strokeDasharray={`${2 * Math.PI * 22}`}
-                strokeDashoffset={`${2 * Math.PI * 22 * (1 - progress / 100)}`}
-                style={{ transition: "stroke-dashoffset 0.4s linear" }}
-              />
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M4 2.5L13 8L4 13.5V2.5Z" fill="#1a1a1a"/>
             </svg>
           )}
-          <button
-            onClick={togglePlay}
-            className="w-12 h-12 rounded-full bg-white/90 hover:bg-white flex items-center justify-center transition-all duration-200 hover:scale-110 shadow-lg"
-          >
-            {isPlaying ? (
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <rect x="3" y="2" width="4" height="12" rx="1" fill="#1a1a1a"/>
-                <rect x="9" y="2" width="4" height="12" rx="1" fill="#1a1a1a"/>
-              </svg>
-            ) : (
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <path d="M4 2.5L13 8L4 13.5V2.5Z" fill="#1a1a1a"/>
-              </svg>
-            )}
-          </button>
-        </div>
+        </button>
 
         <div className="absolute bottom-0 left-0 right-0 px-3 pb-2 flex flex-col gap-1.5">
           <div
