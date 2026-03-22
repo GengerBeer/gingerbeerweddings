@@ -19,6 +19,9 @@ interface VimeoPlayer {
   setQuality(quality: string): Promise<string>;
 }
 
+// Global registry of all card players so we can pause them when fullscreen opens
+const cardPlayers: Map<number, VimeoPlayer> = new Map();
+
 const videos = [
   { id: "1172328822", title: "Wedding Film 1" },
   { id: "1172320048", title: "Wedding Film 2" },
@@ -154,7 +157,8 @@ const FullscreenPlayer = ({ index, onClose, onPrev, onNext }: FullscreenPlayerPr
         title={video.title}
         allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media"
         allowFullScreen
-        className="absolute inset-0 w-full h-full border-0"
+        className="border-0"
+        style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '177.78vh', height: '100vh', minWidth: '100%', minHeight: '56.25vw' }}
       />
 
       {/* Controls overlay — fades in/out */}
@@ -235,11 +239,8 @@ const FullscreenPlayer = ({ index, onClose, onPrev, onNext }: FullscreenPlayerPr
               />
             </div>
 
-            {/* Quality + Counter */}
+            {/* Quality */}
             <div className="flex items-center gap-3">
-              <span className="text-white/40 text-xs font-sans">
-                {index + 1} / {videos.length}
-              </span>
               <div className="relative">
                 <button
                   onClick={() => setShowQuality((v) => !v)}
@@ -323,6 +324,7 @@ const VideoCard = ({ video, onClick }: { video: { id: string; title: string }; o
       }
       const player = new window.Vimeo.Player(iframeRef.current);
       playerRef.current = player;
+      cardPlayers.set(index, player);
       player.on("play", () => setIsPlaying(true));
       player.on("pause", () => setIsPlaying(false));
       player.on("timeupdate", ({ percent }: { percent: number }) => setProgress(percent * 100));
@@ -331,7 +333,8 @@ const VideoCard = ({ video, onClick }: { video: { id: string; title: string }; o
       setReady(true);
     };
     init();
-  }, []);
+    return () => { cardPlayers.delete(index); };
+  }, [index]);
 
   const togglePlay = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -492,6 +495,10 @@ export default function PortfolioSection() {
 
   useEffect(() => {
     document.body.style.overflow = activeIndex !== null ? "hidden" : "";
+    // Pause all card players when fullscreen opens
+    if (activeIndex !== null) {
+      cardPlayers.forEach((player) => player.pause().catch(() => {}));
+    }
     return () => { document.body.style.overflow = ""; };
   }, [activeIndex]);
 
