@@ -197,18 +197,8 @@ const FullscreenPlayer = ({
           pointerEvents: showControls ? "auto" : "none",
         }}
       >
-        {/* Top: close — same style as fullscreen button on card, but with collapse icon */}
-        <div className="flex justify-end px-6 pt-6">
-          <button
-            onClick={onClose}
-            className="inline-flex items-center gap-2 border border-brand-cream/60 text-brand-cream font-sans text-[11px] font-medium uppercase tracking-widest px-4 py-2 rounded-full transition-all duration-300 hover:bg-brand-cream/10 hover:border-brand-cream backdrop-blur-sm"
-          >
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
-              <path d="M8 3v5H3M21 8h-5V3M3 16h5v5M16 21v-5h5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-            Exit
-          </button>
-        </div>
+        {/* Top bar — empty, close moved next to Auto */}
+        <div />
 
         {/* Center: play */}
         <div className="flex items-center justify-center">
@@ -255,25 +245,38 @@ const FullscreenPlayer = ({
                 onChange={handleVolume} className="w-20 h-1 accent-white cursor-pointer" />
             </div>
 
-            <div className="relative">
+            <div className="flex items-center gap-3">
+              {/* Quality */}
+              <div className="relative">
+                <button
+                  onClick={() => setShowQuality((v) => !v)}
+                  className="text-white/70 hover:text-white text-xs font-sans uppercase tracking-widest px-2 py-0.5 rounded border border-white/20 hover:border-white/50 transition-colors"
+                >
+                  {activeQuality === "auto" ? "Auto" : activeQuality.toUpperCase()}
+                </button>
+                {showQuality && (
+                  <div className="absolute bottom-8 right-0 bg-black/90 backdrop-blur-md border border-white/10 rounded-xl overflow-hidden min-w-[80px] shadow-2xl">
+                    {[{ id: "auto", label: "Auto" }, ...qualities].map((q) => (
+                      <button key={q.id} onClick={() => handleQuality(q.id)}
+                        className={`block w-full text-left px-4 py-2 text-xs transition-colors hover:bg-white/10 ${
+                          activeQuality === q.id ? "text-white font-semibold" : "text-white/60"
+                        }`}>
+                        {q.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Exit — collapse icon only */}
               <button
-                onClick={() => setShowQuality((v) => !v)}
-                className="text-white/70 hover:text-white text-xs font-sans uppercase tracking-widest px-2 py-0.5 rounded border border-white/20 hover:border-white/50 transition-colors"
+                onClick={onClose}
+                className="text-white/70 hover:text-white transition-colors p-0.5"
               >
-                {activeQuality === "auto" ? "Auto" : activeQuality.toUpperCase()}
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                  <path d="M8 3v5H3M21 8h-5V3M3 16h5v5M16 21v-5h5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
               </button>
-              {showQuality && (
-                <div className="absolute bottom-8 right-0 bg-black/90 backdrop-blur-md border border-white/10 rounded-xl overflow-hidden min-w-[80px] shadow-2xl">
-                  {[{ id: "auto", label: "Auto" }, ...qualities].map((q) => (
-                    <button key={q.id} onClick={() => handleQuality(q.id)}
-                      className={`block w-full text-left px-4 py-2 text-xs transition-colors hover:bg-white/10 ${
-                        activeQuality === q.id ? "text-white font-semibold" : "text-white/60"
-                      }`}>
-                      {q.label}
-                    </button>
-                  ))}
-                </div>
-              )}
             </div>
           </div>
         </div>
