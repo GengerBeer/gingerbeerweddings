@@ -17,9 +17,12 @@ interface VimeoPlayer {
   setVolume(volume: number): Promise<number>;
   getQualities(): Promise<{ id: string; label: string; active: boolean }[]>;
   setQuality(quality: string): Promise<string>;
+  getCurrentTime(): Promise<number>;
 }
 
+// Global registry: index → { player, currentTime }
 const cardPlayers: Map<number, VimeoPlayer> = new Map();
+const cardTimes: Map<number, number> = new Map();
 
 const videos = [
   { id: "1172328822", title: "Wedding Film 1" },
@@ -33,11 +36,13 @@ const videos = [
 // ── Fullscreen Overlay Player ──────────────────────────────────────────────
 const FullscreenPlayer = ({
   index,
+  startTime,
   onClose,
   onPrev,
   onNext,
 }: {
   index: number;
+  startTime: number;
   onClose: () => void;
   onPrev: () => void;
   onNext: () => void;
@@ -77,8 +82,19 @@ const FullscreenPlayer = ({
       player.on("timeupdate", (data: { seconds: number; duration: number; percent: number }) => {
         setProgress(data.percent * 100);
         setNearEnd(data.duration - data.seconds <= 5 && data.duration > 0);
+        // Keep card in sync
+        cardTimes.set(index, data.seconds);
+        const cardPlayer = cardPlayers.get(index);
+        if (cardPlayer) cardPlayer.setCurrentTime(data.seconds).catch(() => {});
       });
-      player.getDuration().then((d) => setDuration(d));
+      player.getDuration().then((d) => {
+        setDuration(d);
+        // Seek to where card was
+        if (startTime > 0) {
+          player.setCurrentTime(startTime).catch(() => {});
+          setProgress((startTime / d) * 100);
+        }
+      });
       player.getQualities().then((q) => { if (q?.length) setQualities(q); }).catch(() => {});
     };
     init();
@@ -146,7 +162,7 @@ const FullscreenPlayer = ({
       onMouseMove={resetHideTimer}
       style={{ cursor: showControls ? "default" : "none" }}
     >
-      {/* Iframe — fills screen, 16:9 crop */}
+      {/* Iframe — fills screen */}
       <iframe
         ref={iframeRef}
         key={video.id}
@@ -169,15 +185,15 @@ const FullscreenPlayer = ({
 
       {/* Controls overlay */}
       <div
-        className="absolute inset-0 flex flex-col justify-between transition-opacity duration-300"
+        className="absolute inset-0 flex flex-col justify-between transition-opacity duration-500"
         style={{
           opacity: showControls ? 1 : 0,
-          background: "linear-gradient(transparent 45%, rgba(0,0,0,0.72))",
+          background: "linear-gradient(to bottom, rgba(0,0,0,0.45) 0%, transparent 18%, transparent 70%, rgba(0,0,0,0.75) 100%)",
           pointerEvents: showControls ? "auto" : "none",
         }}
       >
         {/* Top: close */}
-        <div className="flex justify-end px-5 pt-5">
+        <div className="flex justify-end px-6 pt-6">
           <button
             onClick={onClose}
             className="w-9 h-9 rounded-full bg-black/40 hover:bg-black/70 flex items-center justify-center transition-all border border-white/20 backdrop-blur-sm"
@@ -208,22 +224,20 @@ const FullscreenPlayer = ({
         </div>
 
         {/* Bottom controls */}
-        <div className="px-4 pb-4 flex flex-col gap-2">
-          {nearEnd && hasNext && (
-            <div className="flex justify-end mb-1">
-              <span className="text-white/60 text-xs font-sans uppercase tracking-widest animate-pulse">
-                Up next →
-              </span>
-            </div>
-          )}
+        <div className="px-6 pb-6 flex flex-col gap-3">
 
+          {/* Progress */}
           <div
-            className="w-full h-[4px] bg-white/30 rounded-full overflow-hidden cursor-pointer"
+            className="w-full h-[4px] bg-white/25 rounded-full overflow-hidden cursor-pointer group/bar"
             onClick={handleSeek}
           >
-            <div className="h-full bg-white rounded-full" style={{ width: `${progress}%` }} />
+            <div
+              className="h-full bg-white rounded-full transition-all duration-300"
+              style={{ width: `${progress}%` }}
+            />
           </div>
 
+          {/* Controls row */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="text-white/80 flex-shrink-0">
@@ -238,9 +252,9 @@ const FullscreenPlayer = ({
             <div className="relative">
               <button
                 onClick={() => setShowQuality((v) => !v)}
-                className="text-white/80 hover:text-white text-xs font-semibold px-2 py-0.5 rounded border border-white/20 hover:border-white/50 transition-colors"
+                className="text-white/70 hover:text-white text-xs font-sans uppercase tracking-widest px-2 py-0.5 rounded border border-white/20 hover:border-white/50 transition-colors"
               >
-                {activeQuality === "auto" ? "AUTO" : activeQuality.toUpperCase()}
+                {activeQuality === "auto" ? "Auto" : activeQuality.toUpperCase()}
               </button>
               {showQuality && (
                 <div className="absolute bottom-8 right-0 bg-black/90 backdrop-blur-md border border-white/10 rounded-xl overflow-hidden min-w-[80px] shadow-2xl">
@@ -259,38 +273,49 @@ const FullscreenPlayer = ({
         </div>
       </div>
 
-      {/* Prev — left edge */}
+      {/* Prev — left edge, always visible with controls */}
       {hasPrev && (
         <button
           onClick={onPrev}
-          className={`absolute left-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-black/50 hover:bg-black/80 flex items-center justify-center transition-all duration-300 backdrop-blur-sm border border-white/20 ${
+          className={`absolute left-5 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-black/40 hover:bg-black/70 flex items-center justify-center transition-all duration-300 backdrop-blur-sm border border-white/20 hover:border-white/40 ${
             showControls ? "opacity-100" : "opacity-0 pointer-events-none"
-          } ${nearEnd ? "ring-2 ring-white/50" : ""}`}
+          }`}
+          title="Previous (←)"
         >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
             <path d="M15 18l-6-6 6-6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
         </button>
       )}
 
-      {/* Next — right edge */}
+      {/* Next — right edge, ALWAYS visible (not tied to showControls) */}
       {hasNext && (
-        <button
-          onClick={onNext}
-          className={`absolute right-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-black/50 hover:bg-black/80 flex items-center justify-center transition-all duration-300 backdrop-blur-sm border border-white/20 ${
-            showControls ? "opacity-100" : "opacity-0 pointer-events-none"
-          } ${nearEnd ? "ring-2 ring-white/50 animate-pulse" : ""}`}
+        <div
+          className={`absolute right-6 top-1/2 -translate-y-1/2 flex flex-col items-center gap-3 transition-all duration-500 ${
+            nearEnd ? "opacity-100 translate-x-0" : "opacity-0 translate-x-4 pointer-events-none"
+          }`}
         >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-            <path d="M9 18l6-6-6-6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-        </button>
+          {/* Label */}
+          <span className="font-sans text-[10px] uppercase tracking-[0.2em] text-brand-sand/80 whitespace-nowrap">
+            Up Next
+          </span>
+          {/* Button in btn-outline-light style */}
+          <button
+            onClick={onNext}
+            className="inline-flex items-center gap-2 border border-brand-cream/70 text-brand-cream font-sans text-[11px] font-medium uppercase tracking-widest px-5 py-2.5 rounded-full transition-all duration-300 hover:bg-brand-cream/10 hover:border-brand-cream backdrop-blur-sm"
+          >
+            Next Film
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+              <path d="M9 18l6-6-6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
+        </div>
       )}
     </div>
   );
 };
 
-// ── Original VideoCard ─────────────────────────────────────────────────────
+// ── VideoCard ──────────────────────────────────────────────────────────────
 const VideoCard = ({
   video,
   index,
@@ -298,7 +323,7 @@ const VideoCard = ({
 }: {
   video: { id: string; title: string };
   index: number;
-  onOpenFullscreen: () => void;
+  onOpenFullscreen: (currentTime: number) => void;
 }) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const playerRef = useRef<VimeoPlayer | null>(null);
@@ -307,6 +332,7 @@ const VideoCard = ({
   const [ready, setReady] = useState(false);
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(1);
+  const currentTimeRef = useRef(0);
 
   useEffect(() => {
     let attempts = 0;
@@ -321,12 +347,16 @@ const VideoCard = ({
       cardPlayers.set(index, player);
       player.on("play", () => setIsPlaying(true));
       player.on("pause", () => setIsPlaying(false));
-      player.on("timeupdate", ({ percent }: { percent: number }) => setProgress(percent * 100));
+      player.on("timeupdate", (data: { seconds: number; percent: number }) => {
+        setProgress(data.percent * 100);
+        currentTimeRef.current = data.seconds;
+        cardTimes.set(index, data.seconds);
+      });
       player.getDuration().then((d) => setDuration(d));
       setReady(true);
     };
     init();
-    return () => { cardPlayers.delete(index); };
+    return () => { cardPlayers.delete(index); cardTimes.delete(index); };
   }, [index]);
 
   const togglePlay = (e: React.MouseEvent) => {
@@ -372,7 +402,6 @@ const VideoCard = ({
           pointerEvents: ready ? "auto" : "none",
         }}
       >
-        {/* Play/Pause */}
         <button
           onClick={togglePlay}
           className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/90 hover:bg-white flex items-center justify-center transition-all duration-200 hover:scale-110 shadow-lg"
@@ -389,7 +418,6 @@ const VideoCard = ({
           )}
         </button>
 
-        {/* Bottom controls */}
         <div className="absolute bottom-0 left-0 right-0 px-3 pb-2 flex flex-col gap-1.5">
           <div
             className="w-full h-[4px] bg-white/30 rounded-full overflow-hidden cursor-pointer"
@@ -405,16 +433,11 @@ const VideoCard = ({
                 {volume > 0 && <path d="M9 4.5C9.8 5.3 10.3 6.1 10.3 7C10.3 7.9 9.8 8.7 9 9.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>}
                 {volume > 0.5 && <path d="M10.5 3C12 4.2 12.8 5.5 12.8 7C12.8 8.5 12 9.8 10.5 11" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>}
               </svg>
-              <input
-                type="range" min="0" max="1" step="0.05" value={volume}
-                onChange={handleVolume}
-                className="w-14 h-1 accent-white cursor-pointer"
-              />
+              <input type="range" min="0" max="1" step="0.05" value={volume}
+                onChange={handleVolume} className="w-14 h-1 accent-white cursor-pointer" />
             </div>
-
-            {/* Fullscreen button */}
             <button
-              onClick={(e) => { e.stopPropagation(); onOpenFullscreen(); }}
+              onClick={(e) => { e.stopPropagation(); onOpenFullscreen(currentTimeRef.current); }}
               className="text-white/80 hover:text-white transition-colors"
               title="Fullscreen"
             >
@@ -432,6 +455,7 @@ const VideoCard = ({
 // ── Section ────────────────────────────────────────────────────────────────
 export default function PortfolioSection() {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
+  const [startTime, setStartTime] = useState(0);
 
   useEffect(() => {
     if (!document.querySelector('script[src*="vimeo.com/api/player"]')) {
@@ -449,6 +473,11 @@ export default function PortfolioSection() {
     }
     return () => { document.body.style.overflow = ""; };
   }, [activeIndex]);
+
+  const openFullscreen = (index: number, currentTime: number) => {
+    setStartTime(currentTime);
+    setActiveIndex(index);
+  };
 
   return (
     <section id="portfolio" className="section-cream py-28 md:py-40">
@@ -468,7 +497,7 @@ export default function PortfolioSection() {
               key={video.id}
               video={video}
               index={i}
-              onOpenFullscreen={() => setActiveIndex(i)}
+              onOpenFullscreen={(t) => openFullscreen(i, t)}
             />
           ))}
         </div>
@@ -477,9 +506,18 @@ export default function PortfolioSection() {
       {activeIndex !== null && (
         <FullscreenPlayer
           index={activeIndex}
+          startTime={startTime}
           onClose={() => setActiveIndex(null)}
-          onPrev={() => setActiveIndex((i) => Math.max(0, (i ?? 0) - 1))}
-          onNext={() => setActiveIndex((i) => Math.min(videos.length - 1, (i ?? 0) + 1))}
+          onPrev={() => {
+            const t = cardTimes.get(activeIndex - 1) ?? 0;
+            setStartTime(t);
+            setActiveIndex((i) => Math.max(0, (i ?? 0) - 1));
+          }}
+          onNext={() => {
+            const t = cardTimes.get(activeIndex + 1) ?? 0;
+            setStartTime(t);
+            setActiveIndex((i) => Math.min(videos.length - 1, (i ?? 0) + 1));
+          }}
         />
       )}
     </section>
