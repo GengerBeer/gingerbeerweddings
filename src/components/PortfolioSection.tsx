@@ -19,7 +19,6 @@ interface VimeoPlayer {
   setQuality(quality: string): Promise<string>;
 }
 
-// Global registry of all card players so we can pause them when fullscreen opens
 const cardPlayers: Map<number, VimeoPlayer> = new Map();
 
 const videos = [
@@ -32,14 +31,17 @@ const videos = [
 ];
 
 // ── Fullscreen Overlay Player ──────────────────────────────────────────────
-interface FullscreenPlayerProps {
+const FullscreenPlayer = ({
+  index,
+  onClose,
+  onPrev,
+  onNext,
+}: {
   index: number;
   onClose: () => void;
   onPrev: () => void;
   onNext: () => void;
-}
-
-const FullscreenPlayer = ({ index, onClose, onPrev, onNext }: FullscreenPlayerProps) => {
+}) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const playerRef = useRef<VimeoPlayer | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -53,11 +55,10 @@ const FullscreenPlayer = ({ index, onClose, onPrev, onNext }: FullscreenPlayerPr
   const [showControls, setShowControls] = useState(true);
   const hideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const video = videos[index];
   const hasPrev = index > 0;
   const hasNext = index < videos.length - 1;
+  const video = videos[index];
 
-  // Init player on index change
   useEffect(() => {
     setProgress(0);
     setNearEnd(false);
@@ -71,7 +72,6 @@ const FullscreenPlayer = ({ index, onClose, onPrev, onNext }: FullscreenPlayerPr
       }
       const player = new window.Vimeo.Player(iframeRef.current);
       playerRef.current = player;
-
       player.on("play", () => setIsPlaying(true));
       player.on("pause", () => setIsPlaying(false));
       player.on("timeupdate", (data: { seconds: number; duration: number; percent: number }) => {
@@ -82,14 +82,12 @@ const FullscreenPlayer = ({ index, onClose, onPrev, onNext }: FullscreenPlayerPr
       player.getQualities().then((q) => { if (q?.length) setQualities(q); }).catch(() => {});
     };
     init();
-
     return () => {
       playerRef.current?.pause().catch(() => {});
       playerRef.current = null;
     };
   }, [index]);
 
-  // Auto-hide controls after 3s
   const resetHideTimer = useCallback(() => {
     setShowControls(true);
     if (hideTimer.current) clearTimeout(hideTimer.current);
@@ -101,7 +99,6 @@ const FullscreenPlayer = ({ index, onClose, onPrev, onNext }: FullscreenPlayerPr
     return () => { if (hideTimer.current) clearTimeout(hideTimer.current); };
   }, [resetHideTimer]);
 
-  // Keyboard shortcuts
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       resetHideTimer();
@@ -145,11 +142,11 @@ const FullscreenPlayer = ({ index, onClose, onPrev, onNext }: FullscreenPlayerPr
 
   return (
     <div
-      className="fixed inset-0 z-[100] bg-black"
+      className="fixed inset-0 z-[100] bg-black overflow-hidden"
       onMouseMove={resetHideTimer}
       style={{ cursor: showControls ? "default" : "none" }}
     >
-      {/* Iframe */}
+      {/* Iframe — fills screen, 16:9 crop */}
       <iframe
         ref={iframeRef}
         key={video.id}
@@ -158,10 +155,19 @@ const FullscreenPlayer = ({ index, onClose, onPrev, onNext }: FullscreenPlayerPr
         allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media"
         allowFullScreen
         className="border-0"
-        style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '177.78vh', height: '100vh', minWidth: '100%', minHeight: '56.25vw' }}
+        style={{
+          position: "absolute",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          width: "177.78vh",
+          height: "100vh",
+          minWidth: "100%",
+          minHeight: "56.25vw",
+        }}
       />
 
-      {/* Controls overlay — fades in/out */}
+      {/* Controls overlay */}
       <div
         className="absolute inset-0 flex flex-col justify-between transition-opacity duration-300"
         style={{
@@ -182,7 +188,7 @@ const FullscreenPlayer = ({ index, onClose, onPrev, onNext }: FullscreenPlayerPr
           </button>
         </div>
 
-        {/* Center: play button */}
+        {/* Center: play */}
         <div className="flex items-center justify-center">
           <button
             onClick={togglePlay}
@@ -203,7 +209,6 @@ const FullscreenPlayer = ({ index, onClose, onPrev, onNext }: FullscreenPlayerPr
 
         {/* Bottom controls */}
         <div className="px-4 pb-4 flex flex-col gap-2">
-          {/* Near-end hint */}
           {nearEnd && hasNext && (
             <div className="flex justify-end mb-1">
               <span className="text-white/60 text-xs font-sans uppercase tracking-widest animate-pulse">
@@ -212,68 +217,55 @@ const FullscreenPlayer = ({ index, onClose, onPrev, onNext }: FullscreenPlayerPr
             </div>
           )}
 
-          {/* Progress bar */}
           <div
             className="w-full h-[4px] bg-white/30 rounded-full overflow-hidden cursor-pointer"
             onClick={handleSeek}
           >
-            <div
-              className="h-full bg-white rounded-full transition-all duration-300"
-              style={{ width: `${progress}%` }}
-            />
+            <div className="h-full bg-white rounded-full" style={{ width: `${progress}%` }} />
           </div>
 
-          {/* Controls row */}
           <div className="flex items-center justify-between">
-            {/* Volume */}
             <div className="flex items-center gap-2">
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="text-white/80 flex-shrink-0">
                 <path d="M2 5H4.5L7 2.5V11.5L4.5 9H2V5Z" fill="currentColor"/>
                 {volume > 0 && <path d="M9 4.5C9.8 5.3 10.3 6.1 10.3 7C10.3 7.9 9.8 8.7 9 9.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>}
                 {volume > 0.5 && <path d="M10.5 3C12 4.2 12.8 5.5 12.8 7C12.8 8.5 12 9.8 10.5 11" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>}
               </svg>
-              <input
-                type="range" min="0" max="1" step="0.05" value={volume}
-                onChange={handleVolume}
-                className="w-20 h-1 accent-white cursor-pointer"
-              />
+              <input type="range" min="0" max="1" step="0.05" value={volume}
+                onChange={handleVolume} className="w-20 h-1 accent-white cursor-pointer" />
             </div>
 
-            {/* Quality */}
-            <div className="flex items-center gap-3">
-              <div className="relative">
-                <button
-                  onClick={() => setShowQuality((v) => !v)}
-                  className="text-white/80 hover:text-white text-xs font-semibold px-2 py-0.5 rounded border border-white/20 hover:border-white/50 transition-colors"
-                >
-                  {activeQuality === "auto" ? "AUTO" : activeQuality.toUpperCase()}
-                </button>
-                {showQuality && (
-                  <div className="absolute bottom-8 right-0 bg-black/90 backdrop-blur-md border border-white/10 rounded-xl overflow-hidden min-w-[80px] shadow-2xl">
-                    {[{ id: "auto", label: "Auto" }, ...qualities].map((q) => (
-                      <button key={q.id} onClick={() => handleQuality(q.id)}
-                        className={`block w-full text-left px-4 py-2 text-xs transition-colors hover:bg-white/10 ${
-                          activeQuality === q.id ? "text-white font-semibold" : "text-white/60"
-                        }`}>
-                        {q.label}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
+            <div className="relative">
+              <button
+                onClick={() => setShowQuality((v) => !v)}
+                className="text-white/80 hover:text-white text-xs font-semibold px-2 py-0.5 rounded border border-white/20 hover:border-white/50 transition-colors"
+              >
+                {activeQuality === "auto" ? "AUTO" : activeQuality.toUpperCase()}
+              </button>
+              {showQuality && (
+                <div className="absolute bottom-8 right-0 bg-black/90 backdrop-blur-md border border-white/10 rounded-xl overflow-hidden min-w-[80px] shadow-2xl">
+                  {[{ id: "auto", label: "Auto" }, ...qualities].map((q) => (
+                    <button key={q.id} onClick={() => handleQuality(q.id)}
+                      className={`block w-full text-left px-4 py-2 text-xs transition-colors hover:bg-white/10 ${
+                        activeQuality === q.id ? "text-white font-semibold" : "text-white/60"
+                      }`}>
+                      {q.label}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>
       </div>
 
-      {/* Prev button — left edge */}
+      {/* Prev — left edge */}
       {hasPrev && (
         <button
           onClick={onPrev}
           className={`absolute left-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-black/50 hover:bg-black/80 flex items-center justify-center transition-all duration-300 backdrop-blur-sm border border-white/20 ${
             showControls ? "opacity-100" : "opacity-0 pointer-events-none"
-          } ${nearEnd ? "ring-2 ring-white/50 scale-110" : ""}`}
-          title="Previous (←)"
+          } ${nearEnd ? "ring-2 ring-white/50" : ""}`}
         >
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
             <path d="M15 18l-6-6 6-6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -281,14 +273,13 @@ const FullscreenPlayer = ({ index, onClose, onPrev, onNext }: FullscreenPlayerPr
         </button>
       )}
 
-      {/* Next button — right edge */}
+      {/* Next — right edge */}
       {hasNext && (
         <button
           onClick={onNext}
           className={`absolute right-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-black/50 hover:bg-black/80 flex items-center justify-center transition-all duration-300 backdrop-blur-sm border border-white/20 ${
             showControls ? "opacity-100" : "opacity-0 pointer-events-none"
-          } ${nearEnd ? "ring-2 ring-white/50 scale-110 animate-pulse" : ""}`}
-          title="Next (→)"
+          } ${nearEnd ? "ring-2 ring-white/50 animate-pulse" : ""}`}
         >
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
             <path d="M9 18l6-6-6-6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -299,27 +290,30 @@ const FullscreenPlayer = ({ index, onClose, onPrev, onNext }: FullscreenPlayerPr
   );
 };
 
-// ── Original VideoCard with hover overlay ─────────────────────────────────
-const VideoCard = ({ video, onClick }: { video: { id: string; title: string }; onClick: () => void }) => {
+// ── Original VideoCard ─────────────────────────────────────────────────────
+const VideoCard = ({
+  video,
+  index,
+  onOpenFullscreen,
+}: {
+  video: { id: string; title: string };
+  index: number;
+  onOpenFullscreen: () => void;
+}) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<VimeoPlayer | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
   const [ready, setReady] = useState(false);
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(1);
-  const [qualities, setQualities] = useState<{ id: string; label: string; active: boolean }[]>([]);
-  const [activeQuality, setActiveQuality] = useState("auto");
-  const [showQuality, setShowQuality] = useState(false);
 
   useEffect(() => {
     let attempts = 0;
     const init = () => {
       if (!iframeRef.current) return;
       if (!window.Vimeo) {
-        attempts++;
-        if (attempts < 20) setTimeout(init, 300);
+        if (++attempts < 20) setTimeout(init, 300);
         return;
       }
       const player = new window.Vimeo.Player(iframeRef.current);
@@ -329,7 +323,6 @@ const VideoCard = ({ video, onClick }: { video: { id: string; title: string }; o
       player.on("pause", () => setIsPlaying(false));
       player.on("timeupdate", ({ percent }: { percent: number }) => setProgress(percent * 100));
       player.getDuration().then((d) => setDuration(d));
-      player.getQualities().then((q) => { if (q && q.length) setQualities(q); }).catch(() => {});
       setReady(true);
     };
     init();
@@ -358,20 +351,8 @@ const VideoCard = ({ video, onClick }: { video: { id: string; title: string }; o
     playerRef.current?.setVolume(val);
   };
 
-  const handleQuality = (quality: string) => {
-    playerRef.current?.setQuality(quality).catch(() => {});
-    setActiveQuality(quality);
-    setShowQuality(false);
-  };
-
-  const handleFullscreen = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    onClick();
-  };
-
   return (
     <div
-      ref={containerRef}
       className="group rounded-xl overflow-hidden relative bg-black transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl"
       style={{ aspectRatio: "16/9" }}
     >
@@ -384,7 +365,6 @@ const VideoCard = ({ video, onClick }: { video: { id: string; title: string }; o
         className="absolute inset-0 w-full h-full border-0"
       />
 
-      {/* Original hover overlay */}
       <div
         className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
         style={{
@@ -392,39 +372,33 @@ const VideoCard = ({ video, onClick }: { video: { id: string; title: string }; o
           pointerEvents: ready ? "auto" : "none",
         }}
       >
-        {/* Play/Pause — center */}
+        {/* Play/Pause */}
         <button
           onClick={togglePlay}
           className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/90 hover:bg-white flex items-center justify-center transition-all duration-200 hover:scale-110 shadow-lg"
         >
           {isPlaying ? (
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <rect x="3" y="2" width="4" height="12" rx="1" fill="#1a1a1a" />
-              <rect x="9" y="2" width="4" height="12" rx="1" fill="#1a1a1a" />
+              <rect x="3" y="2" width="4" height="12" rx="1" fill="#1a1a1a"/>
+              <rect x="9" y="2" width="4" height="12" rx="1" fill="#1a1a1a"/>
             </svg>
           ) : (
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path d="M4 2.5L13 8L4 13.5V2.5Z" fill="#1a1a1a" />
+              <path d="M4 2.5L13 8L4 13.5V2.5Z" fill="#1a1a1a"/>
             </svg>
           )}
         </button>
 
         {/* Bottom controls */}
         <div className="absolute bottom-0 left-0 right-0 px-3 pb-2 flex flex-col gap-1.5">
-          {/* Progress bar */}
           <div
             className="w-full h-[4px] bg-white/30 rounded-full overflow-hidden cursor-pointer"
             onClick={handleSeek}
           >
-            <div
-              className="h-full bg-white rounded-full transition-all duration-300"
-              style={{ width: `${progress}%` }}
-            />
+            <div className="h-full bg-white rounded-full transition-all duration-300" style={{ width: `${progress}%` }} />
           </div>
 
-          {/* Controls row */}
           <div className="flex items-center justify-between">
-            {/* Volume */}
             <div className="flex items-center gap-2">
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="text-white/80 flex-shrink-0">
                 <path d="M2 5H4.5L7 2.5V11.5L4.5 9H2V5Z" fill="currentColor"/>
@@ -438,41 +412,16 @@ const VideoCard = ({ video, onClick }: { video: { id: string; title: string }; o
               />
             </div>
 
-            {/* Right controls */}
-            <div className="flex items-center gap-3">
-              {/* Quality — hidden on cards */}
-              <div className="relative hidden">
-                <button
-                  onClick={(e) => { e.stopPropagation(); setShowQuality((v) => !v); }}
-                  className="text-white/80 hover:text-white text-xs font-semibold transition-colors px-2 py-0.5 rounded border border-white/20 hover:border-white/50"
-                >
-                  {activeQuality === "auto" ? "AUTO" : activeQuality.toUpperCase()}
-                </button>
-                {showQuality && (
-                  <div className="absolute bottom-8 right-0 bg-black/90 backdrop-blur-md border border-white/10 rounded-xl overflow-hidden min-w-[80px] shadow-2xl">
-                    {[{ id: "auto", label: "Auto" }, ...qualities].map((q) => (
-                      <button key={q.id} onClick={() => handleQuality(q.id)}
-                        className={`block w-full text-left px-4 py-2 text-xs transition-colors hover:bg-white/10 ${
-                          activeQuality === q.id ? "text-white font-semibold" : "text-white/60"
-                        }`}>
-                        {q.label}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Fullscreen button */}
-              <button
-                onClick={handleFullscreen}
-                className="text-white/80 hover:text-white transition-colors"
-                title="Fullscreen"
-              >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                  <path d="M3 9V3h6M15 3h6v6M21 15v6h-6M9 21H3v-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </button>
-            </div>
+            {/* Fullscreen button */}
+            <button
+              onClick={(e) => { e.stopPropagation(); onOpenFullscreen(); }}
+              className="text-white/80 hover:text-white transition-colors"
+              title="Fullscreen"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                <path d="M3 9V3h6M15 3h6v6M21 15v6h-6M9 21H3v-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </button>
           </div>
         </div>
       </div>
@@ -495,7 +444,6 @@ export default function PortfolioSection() {
 
   useEffect(() => {
     document.body.style.overflow = activeIndex !== null ? "hidden" : "";
-    // Pause all card players when fullscreen opens
     if (activeIndex !== null) {
       cardPlayers.forEach((player) => player.pause().catch(() => {}));
     }
@@ -519,13 +467,13 @@ export default function PortfolioSection() {
             <VideoCard
               key={video.id}
               video={video}
-              onClick={() => setActiveIndex(i)}
+              index={i}
+              onOpenFullscreen={() => setActiveIndex(i)}
             />
           ))}
         </div>
       </div>
 
-      {/* Fullscreen player */}
       {activeIndex !== null && (
         <FullscreenPlayer
           index={activeIndex}
