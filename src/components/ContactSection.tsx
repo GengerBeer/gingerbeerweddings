@@ -3,9 +3,9 @@ import { CheckCircle, ArrowRight, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 
 const STEPS = [
+  { key: "bundles", category: "Bundles", optional: true, items: [{ id: "bundle_1", label: "Teaser + Highlight", desc: "Best value combo" }, { id: "bundle_2", label: "Teaser + Highlight + Full Film", desc: "Complete wedding package" }] },
   { key: "individual", category: "Individual Services", items: [{ id: "teaser", label: "Teaser", desc: "Up to 45 sec — Instagram, TikTok, Reels" }, { id: "highlight", label: "Highlight Film", desc: "Cinematic day recap, up to 15 min" }, { id: "full_film", label: "Full Wedding Film", desc: "Full chronological documentary, 20–60 min" }, { id: "ceremony", label: "Ceremony Edit", desc: "Full ceremony, no cuts" }, { id: "speeches", label: "Speeches & Toasts", desc: "All toasts and speeches, edited" }, { id: "reception", label: "Reception Edit", desc: "First dance, cake, party highlights" }, { id: "same_day", label: "Same Day Recap", desc: "Delivered on your wedding day (proxy edit)" }] },
-  { key: "bundles", category: "Bundles", items: [{ id: "bundle_1", label: "Teaser + Highlight", desc: "Best value combo" }, { id: "bundle_2", label: "Teaser + Highlight + Full Film", desc: "Complete wedding package" }] },
-  { key: "addons", category: "Add-ons", items: [{ id: "artistic_cut", label: "Artistic Cut", desc: "Non-chronological edit in Highlight style" }, { id: "ai_4k", label: "AI Upscale to 4K", desc: "Detail restoration, sharpening, artifact removal" }, { id: "cleanup", label: "Object Cleanup", desc: "Remove people, wires, logos from video/photo" }] },
+  { key: "addons", category: "Add-ons", optional: true, items: [{ id: "artistic_cut", label: "Artistic Cut", desc: "Non-chronological edit in Highlight style" }, { id: "ai_4k", label: "AI Upscale to 4K", desc: "Detail restoration, sharpening, artifact removal" }, { id: "cleanup", label: "Object Cleanup", desc: "Remove people, wires, logos from video/photo" }] },
   { key: "message", category: "Your Message", items: [] },
 ];
 
@@ -70,7 +70,7 @@ export default function ContactSection() {
               <div className="divider-dark" />
               <div className="flex justify-between items-center py-4"><span className="font-sans text-[11px] uppercase tracking-widest text-brand-cream/40">Email</span><a href="mailto:hello@gingerbeerweddings.com" className="font-sans text-sm text-brand-cream hover:text-brand-sand transition-colors">hello@gingerbeerweddings.com</a></div>
               <div className="divider-dark" />
-              <div className="flex justify-between items-center py-4"><span className="font-sans text-[11px] uppercase tracking-widest text-brand-cream/40">Based In</span><span className="font-sans text-sm text-brand-cream">United States · Remote Worldwide</span></div>
+              <div className="flex justify-between items-center py-4"><span className="font-sans text-[11px] uppercase tracking-widest text-brand-cream/40">Based In</span><span className="font-sans text-sm text-brand-cream">European Union • Remote Worldwide</span></div>
               <div className="divider-dark" />
             </div>
           </div>
@@ -84,11 +84,14 @@ export default function ContactSection() {
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-5">
-                {step === 0 && (<div className="space-y-5"><div className="grid grid-cols-1 sm:grid-cols-2 gap-5"><input type="text" name="name" placeholder="Your Names *" required value={form.name} onChange={handleChange} className="form-input" /><input type="email" name="email" placeholder="Email Address *" required value={form.email} onChange={handleChange} className="form-input" /></div><input type="text" name="wedding_date" placeholder="Wedding Date (if known)" value={form.wedding_date} onChange={handleChange} className="form-input" /><button type="button" onClick={handleNext} className="btn-primary w-full sm:w-auto justify-center flex items-center gap-2">Next — Choose Services<ArrowRight size={13} /></button></div>)}
+                {step === 0 && (<div className="space-y-5"><div className="grid grid-cols-1 sm:grid-cols-2 gap-5"><input type="text" name="name" placeholder="Your Names *" required value={form.name} onChange={handleChange} className="form-input" /><input type="email" name="email" placeholder="Email Address *" required value={form.email} onChange={handleChange} className="form-input" /></div><input type="text" name="wedding_date" placeholder="Wedding Date (if known)" value={form.wedding_date} onChange={handleChange} className="form-input" /><button type="button" onClick={handleNext} className="btn-primary w-full sm:w-auto justify-center flex items-center gap-2">Next — Choose Bundles<ArrowRight size={13} /></button></div>)}
                 {step >= 1 && step <= 3 && (
                   <div className="space-y-5">
                     <div className="flex items-center gap-2 mb-2">{[0, 1, 2].map((i) => (<div key={i} className={`h-1 rounded-full transition-all duration-300 ${i <= progressStep ? "w-6 bg-brand-sand" : "w-3 bg-brand-cream/20"}`} />))}<span className="font-sans text-[10px] uppercase tracking-widest text-brand-cream/30 ml-2">Step {step} of 3</span></div>
-                    <p className="font-sans text-[10px] uppercase tracking-widest text-brand-cream/50">{STEPS[step - 1].category}</p>
+                    <p className="font-sans text-[10px] uppercase tracking-widest text-brand-cream/50">
+                      {STEPS[step - 1].category}
+                      {STEPS[step - 1].optional && <span className="text-brand-cream/30 normal-case tracking-normal ml-2 text-xs">(Optional)</span>}
+                    </p>
                     <div className="space-y-2">{STEPS[step - 1].items.map((item) => (<ServiceCheckbox key={item.id} item={item} checked={selected.includes(item.id)} onChange={() => toggleService(item.id)} />))}</div>
                     <div className="flex items-center gap-3 pt-1">
                       <button type="button" onClick={handleBack} className="flex items-center gap-2 font-sans text-[11px] uppercase tracking-widest text-brand-cream/40 hover:text-brand-cream transition-colors"><ArrowLeft size={12} />Back</button>

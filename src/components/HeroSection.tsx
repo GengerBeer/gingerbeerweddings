@@ -1,20 +1,17 @@
 import { useState, useEffect, useRef } from "react";
-import { X, Play } from "lucide-react";
 import heroBg from "@/assets/hero-bg.jpg";
 import portfolio1 from "@/assets/portfolio-1.jpg";
 import portfolio2 from "@/assets/portfolio-2.jpg";
+import VideoModal from "@/components/VideoModal";
 
-const heroVideos = {
-  left: { title: "The Ceremony", videoUrl: "/video/4.mov" },
-  right: { title: "Emma & James", videoUrl: "/video/Rider.mp4" }
-};
-
-
+const heroVideos = [
+  { title: "The Ceremony", videoUrl: "/video/4.mov" },
+  { title: "Emma & James", videoUrl: "/video/Rider.mp4" },
+];
 
 export default function HeroSection() {
   const sectionRef = useRef<HTMLElement>(null);
-  const [lightboxOpen, setLightboxOpen] = useState(false);
-  const [activeVideo, setActiveVideo] = useState<any>(null);
+  const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
   // Refs for cursor-tracking — avoids React re-renders on every mousemove
   const leftBtnRef = useRef<HTMLDivElement>(null);
@@ -26,7 +23,7 @@ export default function HeroSection() {
     const img = side === "left" ? leftImgRef.current : rightImgRef.current;
     const btn = side === "left" ? leftBtnRef.current : rightBtnRef.current;
     if (img) { img.style.filter = "grayscale(0%)"; img.style.scale = "1.05"; }
-    if (btn) btn.style.opacity = "1";
+    if (btn) { btn.style.opacity = "1"; btn.style.scale = "1.1"; }
   };
 
   const handleCardLeave = (side: "left" | "right") => {
@@ -34,7 +31,7 @@ export default function HeroSection() {
     const btn = side === "left" ? leftBtnRef.current : rightBtnRef.current;
     const defaultFilter = side === "left" ? "grayscale(100%) contrast(110%)" : "grayscale(10%)";
     if (img) { img.style.filter = defaultFilter; img.style.scale = "1"; }
-    if (btn) btn.style.opacity = "0";
+    if (btn) { btn.style.opacity = "0"; btn.style.scale = "1"; }
   };
 
   const handleCardMove = (e: React.MouseEvent<HTMLDivElement>, side: "left" | "right") => {
@@ -45,15 +42,7 @@ export default function HeroSection() {
     btn.style.top = `${e.clientY - rect.top}px`;
   };
 
-  const openVideo = (video: any) => {
-    setActiveVideo(video);
-    setLightboxOpen(true);
-  };
-
-  const closeVideo = () => {
-    setLightboxOpen(false);
-    setActiveVideo(null);
-  };
+  const openVideo = (idx: number) => setActiveIndex(idx);
 
   // Parallax on scroll
   useEffect(() => {
@@ -150,7 +139,7 @@ export default function HeroSection() {
               WebkitMaskImage: "-webkit-radial-gradient(white, black)",
               cursor: "none",
             }}
-            onClick={() => openVideo(heroVideos.left)}
+            onClick={() => openVideo(0)}
             onMouseEnter={() => handleCardEnter("left")}
             onMouseLeave={() => handleCardLeave("left")}
             onMouseMove={(e) => handleCardMove(e, "left")}
@@ -186,7 +175,9 @@ export default function HeroSection() {
             >
               <div className="absolute inset-0 rounded-full" style={{ background: "linear-gradient(155deg, rgba(255,255,255,0.3) 0%, transparent 40%)" }} />
               <div className="w-full h-full flex items-center justify-center">
-                <Play size={20} className="text-white relative z-10 drop-shadow" style={{ marginLeft: 2 }} fill="currentColor" />
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" className="relative z-10 translate-x-0.5 text-white drop-shadow">
+                  <path d="M6 4.5L19.5 12 6 19.5V4.5Z" fill="currentColor"/>
+                </svg>
               </div>
             </div>
           </div>
@@ -200,7 +191,7 @@ export default function HeroSection() {
               WebkitMaskImage: "-webkit-radial-gradient(white, black)",
               cursor: "none",
             }}
-            onClick={() => openVideo(heroVideos.right)}
+            onClick={() => openVideo(1)}
             onMouseEnter={() => handleCardEnter("right")}
             onMouseLeave={() => handleCardLeave("right")}
             onMouseMove={(e) => handleCardMove(e, "right")}
@@ -236,7 +227,9 @@ export default function HeroSection() {
             >
               <div className="absolute inset-0 rounded-full" style={{ background: "linear-gradient(155deg, rgba(255,255,255,0.3) 0%, transparent 40%)" }} />
               <div className="w-full h-full flex items-center justify-center">
-                <Play size={26} className="text-white relative z-10 drop-shadow" style={{ marginLeft: 3 }} fill="currentColor" />
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" className="relative z-10 translate-x-0.5 text-white drop-shadow">
+                  <path d="M6 4.5L19.5 12 6 19.5V4.5Z" fill="currentColor"/>
+                </svg>
               </div>
             </div>
           </div>
@@ -267,16 +260,48 @@ export default function HeroSection() {
             {/* Mobile-only Images (simplified vertical layout) */}
             <div className="md:hidden flex w-full max-w-sm mx-auto justify-between gap-4 mt-12 pointer-events-auto">
               <div 
-                className="w-1/2 aspect-[3/4] rounded-lg overflow-hidden shadow-xl -rotate-2 border border-brand-cream/10 cursor-pointer"
-                onClick={() => openVideo(heroVideos.left)}
+                className="relative w-1/2 aspect-[3/4] rounded-lg overflow-hidden shadow-xl -rotate-2 border border-brand-cream/10 cursor-pointer group"
+                onClick={() => openVideo(0)}
               >
-                <img src={portfolio2} alt="" className="w-full h-full object-cover grayscale-[100%]" />
+                <img src={portfolio2} alt="" className="w-full h-full object-cover grayscale-[100%] transition-transform duration-700 group-hover:scale-105" />
+                <div className="absolute inset-0 bg-brand-dark/20 transition-opacity duration-300 group-hover:opacity-0" />
+                <div
+                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 w-16 h-16 rounded-full flex items-center justify-center transition-all duration-300 group-hover:scale-110"
+                  style={{
+                    background: "linear-gradient(145deg, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.06) 100%)",
+                    backdropFilter: "blur(20px) saturate(180%)",
+                    WebkitBackdropFilter: "blur(20px) saturate(180%)",
+                    border: "1px solid rgba(255,255,255,0.35)",
+                    boxShadow: "0 2px 16px rgba(0,0,0,0.25), inset 0 1.5px 0 rgba(255,255,255,0.5), inset 0 -1px 0 rgba(255,255,255,0.08)",
+                  }}
+                >
+                  <div className="absolute inset-0 rounded-full" style={{ background: "linear-gradient(155deg, rgba(255,255,255,0.28) 0%, transparent 40%)" }} />
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" className="relative z-10 translate-x-0.5 text-white drop-shadow">
+                    <path d="M6 4.5L19.5 12 6 19.5V4.5Z" fill="currentColor"/>
+                  </svg>
+                </div>
               </div>
               <div 
-                className="w-1/2 aspect-[4/3] rounded-lg overflow-hidden shadow-xl rotate-3 mt-8 border border-brand-cream/10 cursor-pointer"
-                onClick={() => openVideo(heroVideos.right)}
+                className="relative w-1/2 aspect-[4/3] rounded-lg overflow-hidden shadow-xl rotate-3 mt-8 border border-brand-cream/10 cursor-pointer group"
+                onClick={() => openVideo(1)}
               >
-                <img src={portfolio1} alt="" className="w-full h-full object-cover grayscale-[10%]" />
+                <img src={portfolio1} alt="" className="w-full h-full object-cover grayscale-[10%] transition-transform duration-700 group-hover:scale-105" />
+                <div className="absolute inset-0 bg-brand-dark/20 transition-opacity duration-300 group-hover:opacity-0" />
+                <div
+                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 w-16 h-16 rounded-full flex items-center justify-center transition-all duration-300 group-hover:scale-110"
+                  style={{
+                    background: "linear-gradient(145deg, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.06) 100%)",
+                    backdropFilter: "blur(20px) saturate(180%)",
+                    WebkitBackdropFilter: "blur(20px) saturate(180%)",
+                    border: "1px solid rgba(255,255,255,0.35)",
+                    boxShadow: "0 2px 16px rgba(0,0,0,0.25), inset 0 1.5px 0 rgba(255,255,255,0.5), inset 0 -1px 0 rgba(255,255,255,0.08)",
+                  }}
+                >
+                  <div className="absolute inset-0 rounded-full" style={{ background: "linear-gradient(155deg, rgba(255,255,255,0.28) 0%, transparent 40%)" }} />
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" className="relative z-10 translate-x-0.5 text-white drop-shadow">
+                    <path d="M6 4.5L19.5 12 6 19.5V4.5Z" fill="currentColor"/>
+                  </svg>
+                </div>
               </div>
             </div>
           </div>
@@ -302,47 +327,12 @@ export default function HeroSection() {
         </div>
       </div>
 
-      {/* Video Lightbox (Reusing styles from Portfolio) */}
-      {lightboxOpen && activeVideo && (
-        <div
-          className="fixed inset-0 z-[100] bg-brand-dark/96 flex items-center justify-center p-4 animate-fade-in"
-          onClick={closeVideo}
-        >
-          <button
-            className="absolute top-6 right-6 text-brand-cream/70 hover:text-brand-cream transition-colors z-[110]"
-            onClick={closeVideo}
-            aria-label="Close"
-          >
-            <X size={32} />
-          </button>
-
-          <div className="w-full max-w-5xl" onClick={(e) => e.stopPropagation()}>
-            {activeVideo.vimeoId ? (
-              <div className="relative aspect-video w-full bg-brand-burgundy overflow-hidden rounded-2xl shadow-2xl border border-brand-cream/10 animate-scale-in">
-                <iframe
-                  src={`https://player.vimeo.com/video/${activeVideo.vimeoId}?autoplay=1&title=0&byline=0&portrait=0`}
-                  className="absolute inset-0 w-full h-full"
-                  frameBorder="0"
-                  allow="autoplay; fullscreen; picture-in-picture"
-                  allowFullScreen
-                ></iframe>
-              </div>
-            ) : (
-              <div className="relative aspect-video w-full bg-black rounded-2xl border border-brand-cream/10 overflow-hidden shadow-2xl animate-scale-in">
-                <video
-                  src={activeVideo.videoUrl}
-                  className="absolute inset-0 w-full h-full object-cover"
-                  autoPlay
-                  controls
-                  playsInline
-                />
-              </div>
-            )}
-            <div className="mt-6 text-center animate-fade-up" style={{ animationDelay: "0.3s" }}>
-              <p className="font-serif text-brand-cream text-2xl font-extrabold uppercase tracking-widest">{activeVideo.title}</p>
-            </div>
-          </div>
-        </div>
+      {activeIndex !== null && (
+        <VideoModal
+          videos={heroVideos}
+          startIndex={activeIndex}
+          onClose={() => setActiveIndex(null)}
+        />
       )}
     </section>
   );

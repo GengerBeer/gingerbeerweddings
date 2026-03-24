@@ -113,7 +113,7 @@ export default function Footer() {
             © {new Date().getFullYear()} Ginger Beer Films. All rights reserved.
           </p>
           <p className="font-sans text-[11px] text-brand-cream/20 uppercase tracking-widest">
-            EU · Remote Worldwide
+            European Union • Remote Worldwide
           </p>
         </div>
       </div>

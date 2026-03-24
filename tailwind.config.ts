@@ -127,6 +127,10 @@ export default {
           "0%": { clipPath: "inset(0 100% 0 0)" },
           "100%": { clipPath: "inset(0 0% 0 0)" },
         },
+        shimmer: {
+          "0%": { backgroundPosition: "200% 0" },
+          "100%": { backgroundPosition: "-200% 0" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -139,6 +143,7 @@ export default {
         "scale-up": "scale-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) both",
         "slide-left": "slide-left 0.8s cubic-bezier(0.22, 1, 0.36, 1) both",
         "slide-right": "slide-right 0.8s cubic-bezier(0.22, 1, 0.36, 1) both",
+        "shimmer": "shimmer 1.4s linear infinite",
       },
     },
   },

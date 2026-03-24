@@ -566,4 +566,17 @@
     background-size: 16px;
     padding-right: 44px;
   }
+
+  /* Date picker — match icon & text colour to other form fields */
+  input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(18%) sepia(30%) saturate(500%) hue-rotate(158deg) brightness(40%);
+    opacity: 0.5;
+    cursor: pointer;
+  }
+  input[type="date"]::-webkit-datetime-edit {
+    color: #0B2C31;
+  }
+  input[type="date"]::-webkit-datetime-edit-fields-wrapper {
+    color: #0B2C31;
+  }
 }

@@ -9,6 +9,9 @@ import TestimonialsSection from "@/components/TestimonialsSection";
 import FAQSection from "@/components/FAQSection";
 import ContactSection from "@/components/ContactSection";
 import Footer from "@/components/Footer";
+import WhyOutsourceSection from "@/components/WhyOutsourceSection";
+import AboutSection from "@/components/AboutSection";
+
 
 function useRevealOnScroll() {
   useEffect(() => {
@@ -39,6 +42,8 @@ const Index = () => {
       <HeroSection />
       <PortfolioSection />
       <ServicesSection />
+      <WhyOutsourceSection />
+      <AboutSection />
       <InvestmentSection />
       <ProcessSection />
       <TestimonialsSection />
