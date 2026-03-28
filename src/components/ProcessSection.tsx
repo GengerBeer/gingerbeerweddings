@@ -9,7 +9,6 @@ const steps = [
 
 export default function ProcessSection() {
   const sectionRef = useRef<HTMLElement>(null);
-
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => entries.forEach((e) => { if (e.isIntersecting) e.target.classList.add("visible"); }),
@@ -18,7 +17,6 @@ export default function ProcessSection() {
     sectionRef.current?.querySelectorAll(".reveal").forEach((el) => observer.observe(el));
     return () => observer.disconnect();
   }, []);
-
   return (
     <section id="process" ref={sectionRef} className="section-dark py-28 md:py-40">
       <div className="max-w-7xl mx-auto px-6 md:px-12">

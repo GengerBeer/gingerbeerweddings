@@ -40,7 +40,6 @@ const services = [
 
 export default function ServicesSection() {
   const sectionRef = useRef<HTMLElement>(null);
-
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => { entries.forEach((e) => { if (e.isIntersecting) e.target.classList.add("visible"); }); },
@@ -49,7 +48,6 @@ export default function ServicesSection() {
     sectionRef.current?.querySelectorAll(".reveal, .reveal-left, .reveal-right").forEach((el) => observer.observe(el));
     return () => observer.disconnect();
   }, []);
-
   return (
     <section id="services" ref={sectionRef} className="section-dark py-28 md:py-40">
       <div className="max-w-7xl mx-auto px-6 md:px-12">

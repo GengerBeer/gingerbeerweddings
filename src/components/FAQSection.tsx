@@ -10,10 +10,18 @@ const faqs = [
   { q: "Will you match my style?", a: "That's the whole point. You fill out a brief, we study your portfolio, and deliver an edit that looks and feels like yours." },
   { q: "What software do you use?", a: "DaVinci Resolve. Exclusively. XML export available if you need Premiere or Final Cut." },
   { q: "Why not just hire an in-house editor?", a: "You can. But an editor costs $3–5K/month whether you have 0 weddings or 10. They take vacations in August. They quit mid-season. We're a team that scales with your workload, keeps your style on file even if people change, and doesn't send you a payroll bill in January." },
+  { q: "What’s always included?", a: "Color grading, licensed music, AI audio cleanup, and all export files. No surprise add-ons." },
+  { q: "How do I send footage?", a: "Secure upload link after booking. Ideal: /Camera_A, /Camera_B, /Drone, /Audio. Not sorted? We’ll organize it for $50." },
+  { q: "Payment?", a: "50% to book. Balance before final delivery. Rush and same-day: 100% upfront." },
+  { q: "Can you remove stuff from footage?", a: "People, wires, logos, exit signs — $100/hour after assessment. We fix things clients call unfixable." },
+  { q: "Multi-day weddings?", a: "2 days +$100, 3 days +$200. Multi-camera surcharges at 5+ cameras. Everything outlined upfront." },
 ];
 
 export default function FAQSection() {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
+  const [showAll, setShowAll] = useState(false);
+
+  const displayedFaqs = showAll ? faqs : faqs.slice(0, 10);
 
   return (
     <section id="faq" className="section-cream py-28 md:py-40">
@@ -23,7 +31,7 @@ export default function FAQSection() {
           <h2 className="font-serif text-display-lg text-foreground font-extrabold">Common Questions</h2>
         </div>
         <div className="space-y-0">
-          {faqs.map((faq, i) => {
+          {displayedFaqs.map((faq, i) => {
             const isOpen = openIndex === i;
             return (
               <div key={i} className="border-t border-border last:border-b">
@@ -40,6 +48,16 @@ export default function FAQSection() {
             );
           })}
         </div>
+        {faqs.length > 10 && (
+          <div className="mt-12 flex justify-center">
+            <button
+              onClick={() => setShowAll(!showAll)}
+              className="inline-flex items-center justify-center font-sans text-[11px] uppercase tracking-widest rounded-full px-8 py-3.5 transition-all duration-300 font-medium border border-brand-dark text-brand-dark hover:bg-brand-dark hover:text-brand-cream"
+            >
+              {showAll ? "Show Less" : "Show More"}
+            </button>
+          </div>
+        )}
       </div>
     </section>
   );
