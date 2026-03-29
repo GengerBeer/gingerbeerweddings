@@ -1,6 +1,14 @@
-import logoIcon from "@/assets/logo-icon.png";
+import logoLight from "@/assets/logo-vector.svg";
 
-const footerLinks = ["Portfolio", "Services", "Investment", "Process", "Contact"];
+const footerLinks = [
+  { label: "Portfolio", href: "#portfolio" },
+  { label: "Services", href: "#services" },
+  { label: "Why GBW", href: "#why-outsource" },
+  { label: "About", href: "#about" },
+  { label: "Pricing", href: "#investment" },
+  { label: "Process", href: "#process" },
+  { label: "Contact", href: "#contact" },
+];
 
 const socials = [
   {
@@ -50,12 +58,14 @@ export default function Footer() {
 
           {/* Brand */}
           <div className="flex flex-col gap-5">
-            <img
-              src={logoIcon}
-              alt="Ginger Beer Films"
-              className="h-14 w-auto object-contain object-left"
-              style={{ filter: "brightness(0) saturate(100%) invert(85%) sepia(15%) saturate(500%) hue-rotate(5deg)" }}
-            />
+            <a href="#" aria-label="Go to top" className="inline-block w-fit">
+              <img
+                src={logoLight}
+                alt="Ginger Beer Films"
+                className="h-[34px] md:h-[38px] w-auto object-contain object-left"
+                style={{ filter: "brightness(0) saturate(100%) invert(85%) sepia(15%) saturate(500%) hue-rotate(5deg)" }}
+              />
+            </a>
             <p className="font-sans text-brand-cream/40 text-sm leading-relaxed max-w-xs">
               Post-production for wedding filmmakers. Fast edits. Clean grades. Zero drama.
             </p>
@@ -79,11 +89,11 @@ export default function Footer() {
             <p className="font-sans text-[10px] uppercase tracking-[0.25em] text-brand-cream/25 mb-2">Pages</p>
             {footerLinks.map((link) => (
               <a
-                key={link}
-                href={`#${link.toLowerCase()}`}
+                key={link.label}
+                href={link.href}
                 className="nav-link font-sans text-sm text-brand-cream/50 hover:text-brand-cream transition-colors duration-200 w-fit"
               >
-                {link}
+                {link.label}
               </a>
             ))}
           </div>
@@ -112,9 +122,12 @@ export default function Footer() {
           <p className="font-sans text-[11px] text-brand-cream/20 uppercase tracking-widest">
             © {new Date().getFullYear()} Ginger Beer Films. All rights reserved.
           </p>
-          <p className="font-sans text-[11px] text-brand-cream/20 uppercase tracking-widest">
-            European Union • Remote Worldwide
-          </p>
+          <div className="flex flex-wrap gap-4 md:gap-8 font-sans text-[11px] text-brand-cream/20 uppercase tracking-widest">
+            <a href="/terms" className="hover:text-brand-cream transition-colors duration-200">
+              Terms & Conditions
+            </a>
+            <span>European Union • Remote Worldwide</span>
+          </div>
         </div>
       </div>
     </footer>

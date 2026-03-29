@@ -215,7 +215,7 @@ export default function InvestmentSection() {
               Always Included
             </p>
             <div className="flex flex-wrap gap-x-2 gap-y-1">
-              {["Color grading", "Licensed music (MusicBed / TrackClub)", "AI audio cleanup", "DaVinci Resolve project files on request", "XML export available"].map((item) => (
+              {["Color grading", "Licensed music (MusicBed / Artlist)", "AI audio cleanup", "DaVinci Resolve project files on request", "XML export available"].map((item) => (
                 <span key={item} className="inline-flex items-center gap-1.5 font-sans text-sm text-muted-foreground whitespace-nowrap">
                   <span className="w-1 h-1 rounded-full bg-muted-foreground/40 shrink-0" />
                   {item}

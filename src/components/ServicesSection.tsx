@@ -49,21 +49,21 @@ export default function ServicesSection() {
     return () => observer.disconnect();
   }, []);
   return (
-    <section id="services" ref={sectionRef} className="section-dark py-28 md:py-40">
+    <section id="services" ref={sectionRef} className="section-dark py-20 md:py-28">
       <div className="max-w-7xl mx-auto px-6 md:px-12">
         <div className="mb-2 md:mb-3 reveal">
           <p className="text-label uppercase tracking-[0.25em] text-brand-sand/60 font-sans text-[10px] mb-4">Capabilities</p>
           <h2 className="font-serif text-display-lg text-brand-cream font-extrabold">What We Do</h2>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-12 md:mt-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-3 mt-6 md:mt-8">
           {services.map((svc, i) => (
-            <div key={svc.number} className={`service-card p-10 md:p-14 reveal ${i === 1 ? "reveal-delay-2" : ""}`}>
-              <div className="relative mb-8">
-                <div className="font-serif text-[100px] md:text-[140px] font-extrabold opacity-20 leading-none select-none" style={{ color: "hsl(188 35% 20%)" }} aria-hidden="true">{svc.number}</div>
-                <h3 className="font-serif text-display-sm text-brand-cream font-extrabold -mt-10 md:-mt-14 relative z-10 whitespace-pre-line">{svc.title}</h3>
+            <div key={svc.number} className={`service-card p-6 md:p-8 reveal ${i === 1 ? "reveal-delay-2" : ""}`}>
+              <div className="relative mb-6">
+                <div className="font-serif text-[80px] md:text-[110px] font-extrabold opacity-20 leading-none select-none" style={{ color: "hsl(188 35% 20%)" }} aria-hidden="true">{svc.number}</div>
+                <h3 className="font-serif text-display-sm text-brand-cream font-extrabold -mt-6 md:-mt-8 relative z-10 whitespace-pre-line">{svc.title}</h3>
               </div>
-              <div className="divider-dark mb-8" />
-              <ul className="space-y-6">
+              <div className="divider-dark mb-5" />
+              <ul className="space-y-3">
                 {svc.items.map((item) => (
                   <li key={item.name} className="flex gap-4">
                     <div className="w-1.5 h-1.5 rounded-full bg-brand-sand mt-2 shrink-0" />

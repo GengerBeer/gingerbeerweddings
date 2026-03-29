@@ -252,7 +252,7 @@ export default function HeroSection() {
             </div>
 
             <div className="w-full flex justify-center mt-8 lg:mt-12 animate-fade-in" style={{ animationDelay: "1.2s" }}>
-              <span className="font-script text-brand-sand text-4xl sm:text-5xl md:text-6xl lg:text-8xl drop-shadow-[0_4px_20px_rgba(0,0,0,0.4)] block leading-[1.25] md:leading-none text-center whitespace-normal md:whitespace-nowrap">
+              <span className="font-script text-brand-sand text-4xl sm:text-5xl md:text-6xl lg:text-[4.8rem] drop-shadow-[0_4px_20px_rgba(0,0,0,0.4)] block leading-[1.25] md:leading-none text-center whitespace-normal md:whitespace-nowrap">
                 We edit. <br className="block md:hidden" /> You book another wedding.
               </span>
             </div>

@@ -23,7 +23,7 @@ export default function AboutSection() {
   const fillRef = useRef(0);
   const indexRef = useRef(0);
   const resettingRef = useRef(false);
-  const DURATION = 2800; // ms per image
+  const DURATION = 8000; // ms per image
   const TICK = 50;      // ms per update
 
   /* Animated fill bar + auto-cycle */

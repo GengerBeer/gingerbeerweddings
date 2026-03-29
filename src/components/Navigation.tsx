@@ -6,7 +6,9 @@ import BookCallDialog from "@/components/BookCallDialog";
 const navLinks = [
   { label: "Portfolio", href: "#portfolio" },
   { label: "Services", href: "#services" },
-  { label: "Investment", href: "#investment" },
+  { label: "Why GBW", href: "#why-outsource" },
+  { label: "About", href: "#about" },
+  { label: "Pricing", href: "#investment" },
   { label: "Process", href: "#process" },
   { label: "Contact", href: "#contact" },
 ];
