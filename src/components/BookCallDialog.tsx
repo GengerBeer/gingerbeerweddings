@@ -33,8 +33,11 @@ export default function BookCallDialog({ open, onClose }: Props) {
   };
   const handleClose = () => { onClose(); setTimeout(reset, 300); };
 
+  const isValidEmail = (val: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val.trim());
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!isValidEmail(email)) { toast.error("Please enter a valid email address."); return; }
     if (!callTime) { toast.error("Please select a time slot."); return; }
     setLoading(true);
     try {

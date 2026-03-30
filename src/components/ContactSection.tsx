@@ -35,7 +35,14 @@ export default function ContactSection() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setForm({ ...form, [e.target.name]: e.target.value });
   const toggleService = (id: string) => setSelected((prev) => prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]);
-  const handleNext = () => { if (step === 0 && (!form.name || !form.email)) { toast.error("Please fill in your name and email."); return; } setStep((s) => s + 1); };
+  const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+  const handleNext = () => {
+    if (step === 0) {
+      if (!form.name || !form.email) { toast.error("Please fill in your name and email."); return; }
+      if (!isValidEmail(form.email)) { toast.error("Please enter a valid email address."); return; }
+    }
+    setStep((s) => s + 1);
+  };
   const handleBack = () => setStep((s) => s - 1);
 
   const handleSubmit = async (e: React.FormEvent) => {
