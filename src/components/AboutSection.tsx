@@ -23,27 +23,59 @@ export default function AboutSection() {
   const fillRef = useRef(0);
   const indexRef = useRef(0);
   const resettingRef = useRef(false);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const DURATION = 8000; // ms per image
   const TICK = 50;      // ms per update
 
-  /* Animated fill bar + auto-cycle */
+  /* Animated fill bar + auto-cycle — starts only when section is in view */
   useEffect(() => {
-    const timer = setInterval(() => {
-      fillRef.current = Math.min(100, fillRef.current + (TICK / DURATION) * 100);
-      setFillPct(fillRef.current);
-      if (fillRef.current >= 100) {
-        const nextIdx = (indexRef.current + 1) % founderImages.length;
-        fillRef.current = 0;
-        indexRef.current = nextIdx;
-        // If looping back to start, flag a reset so bars clear instantly
-        resettingRef.current = nextIdx === 0;
-        setFillPct(0);
-        setActiveIndex(nextIdx);
-        // Clear the reset flag after one tick
-        if (nextIdx === 0) setTimeout(() => { resettingRef.current = false; }, TICK + 10);
+    const startTimer = () => {
+      if (timerRef.current) return; // already running
+      timerRef.current = setInterval(() => {
+        fillRef.current = Math.min(100, fillRef.current + (TICK / DURATION) * 100);
+        setFillPct(fillRef.current);
+        if (fillRef.current >= 100) {
+          const nextIdx = (indexRef.current + 1) % founderImages.length;
+          fillRef.current = 0;
+          indexRef.current = nextIdx;
+          // If looping back to start, flag a reset so bars clear instantly
+          resettingRef.current = nextIdx === 0;
+          setFillPct(0);
+          setActiveIndex(nextIdx);
+          // Clear the reset flag after one tick
+          if (nextIdx === 0) setTimeout(() => { resettingRef.current = false; }, TICK + 10);
+        }
+      }, TICK);
+    };
+
+    const stopTimer = () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
       }
-    }, TICK);
-    return () => clearInterval(timer);
+    };
+
+    const visibilityObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            startTimer();
+          } else {
+            stopTimer();
+          }
+        });
+      },
+      { threshold: 0.3 }
+    );
+
+    if (sectionRef.current) {
+      visibilityObserver.observe(sectionRef.current);
+    }
+
+    return () => {
+      visibilityObserver.disconnect();
+      stopTimer();
+    };
   }, // eslint-disable-next-line react-hooks/exhaustive-deps
   []);
 

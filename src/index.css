@@ -440,11 +440,6 @@
     border-radius: 16px;
     background: hsl(188 55% 15%);
     border-top: 3px solid hsl(var(--sand));
-    transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
-  }
-
-  .process-card:hover {
-    transform: translateY(-4px);
   }
 
   /* ── CTA Buttons ── */

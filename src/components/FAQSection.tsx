@@ -21,7 +21,8 @@ export default function FAQSection() {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
   const [showAll, setShowAll] = useState(false);
 
-  const displayedFaqs = showAll ? faqs : faqs.slice(0, 10);
+  const VISIBLE_COUNT = 6;
+  const displayedFaqs = showAll ? faqs : faqs.slice(0, VISIBLE_COUNT);
 
   return (
     <section id="faq" className="section-cream py-28 md:py-40">
@@ -48,7 +49,7 @@ export default function FAQSection() {
             );
           })}
         </div>
-        {faqs.length > 10 && (
+        {faqs.length > VISIBLE_COUNT && (
           <div className="mt-12 flex justify-center">
             <button
               onClick={() => setShowAll(!showAll)}
