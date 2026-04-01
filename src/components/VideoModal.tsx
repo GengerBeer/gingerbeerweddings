@@ -45,28 +45,49 @@ export default function VideoModal({ videos, startIndex, onClose }: Props) {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showControls, setShowControls] = useState(true);
 
+  // ── Load Vimeo SDK once ──────────────────────────────────────────────────
+  useEffect(() => {
+    if (document.getElementById("vimeo-player-sdk")) return;
+    const script = document.createElement("script");
+    script.id  = "vimeo-player-sdk";
+    script.src = "https://player.vimeo.com/api/player.js";
+    script.async = true;
+    document.head.appendChild(script);
+  }, []);
+
   // ── Vimeo init ──────────────────────────────────────────────────────────
   useEffect(() => {
     if (!isVimeo) return;
     setProgress(0); setIsPlaying(false);
+    playerRef.current = null;
+    let cancelled = false;
     let attempts = 0;
     const init = () => {
-      if (!iframeRef.current || !window.Vimeo) { if (++attempts < 30) setTimeout(init, 300); return; }
+      if (cancelled) return;
+      if (!iframeRef.current || !window.Vimeo?.Player) {
+        if (++attempts < 40) setTimeout(init, 300);
+        return;
+      }
       const player = new window.Vimeo.Player(iframeRef.current);
       playerRef.current = player;
-      player.on("play",        () => { setIsPlaying(true);  setIsBuffering(false); });
-      player.on("pause",       () => setIsPlaying(false));
-      player.on("ended",       () => { setIsPlaying(false); setProgress(0); });
-      player.on("timeupdate",  (d: { percent: number }) => setProgress(d.percent * 100));
-      player.on("bufferstart", () => setIsBuffering(true));
-      player.on("bufferend",   () => setIsBuffering(false));
-      player.getDuration().then((d: number) => setDuration(d));
+      player.on("play",        () => { if (!cancelled) { setIsPlaying(true);  setIsBuffering(false); } });
+      player.on("pause",       () => { if (!cancelled) setIsPlaying(false); });
+      player.on("ended",       () => { if (!cancelled) { setIsPlaying(false); setProgress(0); } });
+      player.on("timeupdate",  (d: { percent: number }) => { if (!cancelled) setProgress(d.percent * 100); });
+      player.on("bufferstart", () => { if (!cancelled) setIsBuffering(true); });
+      player.on("bufferend",   () => { if (!cancelled) setIsBuffering(false); });
+      player.getDuration().then((d: number) => { if (!cancelled) setDuration(d); }).catch(() => {});
       player.getQualities().then((q: any) => {
-        if (q?.length) { setQualities(q); setActiveQuality("auto"); }
+        if (!cancelled && q?.length) { setQualities(q); setActiveQuality("auto"); }
       }).catch(() => {});
     };
-    init();
-    return () => { playerRef.current?.pause().catch(() => {}); playerRef.current = null; };
+    // Small delay so iframe is fully mounted before SDK tries to attach
+    setTimeout(init, 200);
+    return () => {
+      cancelled = true;
+      playerRef.current?.pause().catch(() => {});
+      playerRef.current = null;
+    };
   }, [index, isVimeo]);
 
   // ── HTML5 video sync ─────────────────────────────────────────────────────
@@ -230,7 +251,7 @@ export default function VideoModal({ videos, startIndex, onClose }: Props) {
             <iframe
               ref={iframeRef}
               key={`${video.vimeoId}-${index}`}
-              src={`https://player.vimeo.com/video/${video.vimeoId}?autoplay=1&badge=0&autopause=0&app_id=58479&title=0&byline=0&portrait=0&controls=0`}
+              src={`https://player.vimeo.com/video/${video.vimeoId}?autoplay=1&badge=0&autopause=0&app_id=58479&title=0&byline=0&portrait=0&controls=0&dnt=1`}
               allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media"
               allowFullScreen
               className="absolute inset-0 w-full h-full border-0"
