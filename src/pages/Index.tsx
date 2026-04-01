@@ -5,10 +5,13 @@ import PortfolioSection from "@/components/PortfolioSection";
 import ServicesSection from "@/components/ServicesSection";
 import InvestmentSection from "@/components/InvestmentSection";
 import ProcessSection from "@/components/ProcessSection";
-import TestimonialsSection from "@/components/TestimonialsSection";
+// import TestimonialsSection from "@/components/TestimonialsSection";
 import FAQSection from "@/components/FAQSection";
 import ContactSection from "@/components/ContactSection";
 import Footer from "@/components/Footer";
+import WhyOutsourceSection from "@/components/WhyOutsourceSection";
+import AboutSection from "@/components/AboutSection";
+
 
 function useRevealOnScroll() {
   useEffect(() => {
@@ -39,9 +42,11 @@ const Index = () => {
       <HeroSection />
       <PortfolioSection />
       <ServicesSection />
+      <WhyOutsourceSection />
+      <AboutSection />
       <InvestmentSection />
       <ProcessSection />
-      <TestimonialsSection />
+      {/* <TestimonialsSection /> */}
       <FAQSection />
       <ContactSection />
       <Footer />

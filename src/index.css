@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&family=Montserrat+Alternates:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300;1,400;1,700;1,800&family=Pinyon+Script&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300;1,400;1,700;1,800&family=Pinyon+Script&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -81,7 +81,7 @@
   h2,
   h3,
   h4 {
-    font-family: 'Montserrat Alternates', system-ui, sans-serif;
+    font-family: 'Montserrat', system-ui, sans-serif;
     font-weight: 800;
   }
 }
@@ -90,7 +90,7 @@
 
   /* ── Typography ── */
   .font-serif {
-    font-family: 'Montserrat Alternates', system-ui, sans-serif;
+    font-family: 'Montserrat', system-ui, sans-serif;
   }
 
   .font-sans {
@@ -565,5 +565,18 @@
     background-position: right 18px center;
     background-size: 16px;
     padding-right: 44px;
+  }
+
+  /* Date picker — match icon & text colour to other form fields */
+  input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(18%) sepia(30%) saturate(500%) hue-rotate(158deg) brightness(40%);
+    opacity: 0.5;
+    cursor: pointer;
+  }
+  input[type="date"]::-webkit-datetime-edit {
+    color: #0B2C31;
+  }
+  input[type="date"]::-webkit-datetime-edit-fields-wrapper {
+    color: #0B2C31;
   }
 }

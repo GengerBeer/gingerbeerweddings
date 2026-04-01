@@ -1,20 +1,17 @@
 import { useState, useEffect, useRef } from "react";
-import { X, Play } from "lucide-react";
 import heroBg from "@/assets/hero-bg.jpg";
 import portfolio1 from "@/assets/portfolio-1.jpg";
 import portfolio2 from "@/assets/portfolio-2.jpg";
+import VideoModal from "@/components/VideoModal";
 
-const heroVideos = {
-  left: { title: "The Ceremony", videoUrl: "/video/4.mov" },
-  right: { title: "Emma & James", videoUrl: "/video/Rider.mp4" }
-};
-
-
+const heroVideos = [
+  { title: "The Ceremony", videoUrl: "/video/4.mov" },
+  { title: "Emma & James", videoUrl: "/video/Rider.mp4" },
+];
 
 export default function HeroSection() {
   const sectionRef = useRef<HTMLElement>(null);
-  const [lightboxOpen, setLightboxOpen] = useState(false);
-  const [activeVideo, setActiveVideo] = useState<any>(null);
+  const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
   // Refs for cursor-tracking — avoids React re-renders on every mousemove
   const leftBtnRef = useRef<HTMLDivElement>(null);
@@ -26,7 +23,7 @@ export default function HeroSection() {
     const img = side === "left" ? leftImgRef.current : rightImgRef.current;
     const btn = side === "left" ? leftBtnRef.current : rightBtnRef.current;
     if (img) { img.style.filter = "grayscale(0%)"; img.style.scale = "1.05"; }
-    if (btn) btn.style.opacity = "1";
+    if (btn) { btn.style.opacity = "1"; btn.style.scale = "1.1"; }
   };
 
   const handleCardLeave = (side: "left" | "right") => {
@@ -34,7 +31,7 @@ export default function HeroSection() {
     const btn = side === "left" ? leftBtnRef.current : rightBtnRef.current;
     const defaultFilter = side === "left" ? "grayscale(100%) contrast(110%)" : "grayscale(10%)";
     if (img) { img.style.filter = defaultFilter; img.style.scale = "1"; }
-    if (btn) btn.style.opacity = "0";
+    if (btn) { btn.style.opacity = "0"; btn.style.scale = "1"; }
   };
 
   const handleCardMove = (e: React.MouseEvent<HTMLDivElement>, side: "left" | "right") => {
@@ -45,15 +42,7 @@ export default function HeroSection() {
     btn.style.top = `${e.clientY - rect.top}px`;
   };
 
-  const openVideo = (video: any) => {
-    setActiveVideo(video);
-    setLightboxOpen(true);
-  };
-
-  const closeVideo = () => {
-    setLightboxOpen(false);
-    setActiveVideo(null);
-  };
+  const openVideo = (idx: number) => setActiveIndex(idx);
 
   // Parallax on scroll
   useEffect(() => {
@@ -150,7 +139,7 @@ export default function HeroSection() {
               WebkitMaskImage: "-webkit-radial-gradient(white, black)",
               cursor: "none",
             }}
-            onClick={() => openVideo(heroVideos.left)}
+            onClick={() => openVideo(0)}
             onMouseEnter={() => handleCardEnter("left")}
             onMouseLeave={() => handleCardLeave("left")}
             onMouseMove={(e) => handleCardMove(e, "left")}
@@ -186,7 +175,9 @@ export default function HeroSection() {
             >
               <div className="absolute inset-0 rounded-full" style={{ background: "linear-gradient(155deg, rgba(255,255,255,0.3) 0%, transparent 40%)" }} />
               <div className="w-full h-full flex items-center justify-center">
-                <Play size={20} className="text-white relative z-10 drop-shadow" style={{ marginLeft: 2 }} fill="currentColor" />
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" className="relative z-10 translate-x-0.5 text-white drop-shadow">
+                  <path d="M6 4.5L19.5 12 6 19.5V4.5Z" fill="currentColor"/>
+                </svg>
               </div>
             </div>
           </div>
@@ -200,7 +191,7 @@ export default function HeroSection() {
               WebkitMaskImage: "-webkit-radial-gradient(white, black)",
               cursor: "none",
             }}
-            onClick={() => openVideo(heroVideos.right)}
+            onClick={() => openVideo(1)}
             onMouseEnter={() => handleCardEnter("right")}
             onMouseLeave={() => handleCardLeave("right")}
             onMouseMove={(e) => handleCardMove(e, "right")}
@@ -236,54 +227,81 @@ export default function HeroSection() {
             >
               <div className="absolute inset-0 rounded-full" style={{ background: "linear-gradient(155deg, rgba(255,255,255,0.3) 0%, transparent 40%)" }} />
               <div className="w-full h-full flex items-center justify-center">
-                <Play size={26} className="text-white relative z-10 drop-shadow" style={{ marginLeft: 3 }} fill="currentColor" />
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" className="relative z-10 translate-x-0.5 text-white drop-shadow">
+                  <path d="M6 4.5L19.5 12 6 19.5V4.5Z" fill="currentColor"/>
+                </svg>
               </div>
             </div>
           </div>
 
           <div className="relative z-30 w-full flex flex-col items-center pointer-events-none text-left">
-            <div className="mx-auto flex flex-col items-start w-fit">
+            <div className="mx-auto flex flex-col items-center w-full px-4 mb-2 lg:mb-4">
               <h1
-                className="font-serif text-[15vw] md:text-[10vw] lg:text-[8.5vw] text-brand-cream font-extrabold leading-[0.82] tracking-tight animate-fade-up drop-shadow-[0_2px_15px_rgba(0,0,0,0.4)]"
+                className="font-serif text-[9.5vw] sm:text-[8.5vw] md:text-[7vw] lg:text-[5.5vw] xl:text-[5vw] text-brand-cream font-extrabold leading-[1.1] md:leading-[1] tracking-tight animate-fade-up drop-shadow-[0_2px_15px_rgba(0,0,0,0.4)] whitespace-nowrap -translate-x-[4vw] md:-translate-x-[6vw] lg:-translate-x-[8vw]"
                 style={{ animationDelay: "0.2s" }}
               >
-                Cinematic
+                Your Editing Team.
               </h1>
 
               <h2
-                className="font-serif text-[15vw] md:text-[10vw] lg:text-[8.5vw] text-brand-cream font-extrabold leading-[0.82] tracking-tight animate-fade-up mt-1 lg:mt-2 ml-[12vw] md:ml-[10vw] lg:ml-[15vw] drop-shadow-[0_2px_15px_rgba(0,0,0,0.4)]"
+                className="font-serif text-[9.5vw] sm:text-[8.5vw] md:text-[7vw] lg:text-[5.5vw] xl:text-[5vw] text-brand-cream font-extrabold leading-[1] tracking-tight animate-fade-up mt-1 md:mt-2 translate-x-[4vw] md:translate-x-[6vw] lg:translate-x-[8vw] drop-shadow-[0_2px_15px_rgba(0,0,0,0.4)] whitespace-nowrap"
                 style={{ animationDelay: "0.4s" }}
               >
-                Wedding
-              </h2>
-
-              <h2
-                className="font-serif text-[15vw] md:text-[10vw] lg:text-[8.5vw] text-brand-cream font-extrabold leading-[0.82] tracking-tight animate-fade-up mt-1 lg:mt-2 ml-[24vw] md:ml-[26vw] lg:ml-[35vw] drop-shadow-[0_2px_15px_rgba(0,0,0,0.4)]"
-                style={{ animationDelay: "0.6s" }}
-              >
-                Films
+                Without the Salary.
               </h2>
             </div>
 
             <div className="w-full flex justify-center mt-8 lg:mt-12 animate-fade-in" style={{ animationDelay: "1.2s" }}>
-              <span className="font-script text-brand-sand text-5xl md:text-6xl lg:text-8xl drop-shadow-[0_4px_20px_rgba(0,0,0,0.4)] block leading-none whitespace-nowrap">
-                That Feel Like You
+              <span className="font-script text-brand-sand text-4xl sm:text-5xl md:text-6xl lg:text-[4.8rem] drop-shadow-[0_4px_20px_rgba(0,0,0,0.4)] block leading-[1.25] md:leading-none text-center whitespace-normal md:whitespace-nowrap">
+                We edit. <br className="block md:hidden" /> You book another wedding.
               </span>
             </div>
 
             {/* Mobile-only Images (simplified vertical layout) */}
             <div className="md:hidden flex w-full max-w-sm mx-auto justify-between gap-4 mt-12 pointer-events-auto">
               <div 
-                className="w-1/2 aspect-[3/4] rounded-lg overflow-hidden shadow-xl -rotate-2 border border-brand-cream/10 cursor-pointer"
-                onClick={() => openVideo(heroVideos.left)}
+                className="relative w-1/2 aspect-[3/4] rounded-lg overflow-hidden shadow-xl -rotate-2 border border-brand-cream/10 cursor-pointer group"
+                onClick={() => openVideo(0)}
               >
-                <img src={portfolio2} alt="" className="w-full h-full object-cover grayscale-[100%]" />
+                <img src={portfolio2} alt="" className="w-full h-full object-cover grayscale-[100%] transition-transform duration-700 group-hover:scale-105" />
+                <div className="absolute inset-0 bg-brand-dark/20 transition-opacity duration-300 group-hover:opacity-0" />
+                <div
+                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 w-16 h-16 rounded-full flex items-center justify-center transition-all duration-300 group-hover:scale-110"
+                  style={{
+                    background: "linear-gradient(145deg, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.06) 100%)",
+                    backdropFilter: "blur(20px) saturate(180%)",
+                    WebkitBackdropFilter: "blur(20px) saturate(180%)",
+                    border: "1px solid rgba(255,255,255,0.35)",
+                    boxShadow: "0 2px 16px rgba(0,0,0,0.25), inset 0 1.5px 0 rgba(255,255,255,0.5), inset 0 -1px 0 rgba(255,255,255,0.08)",
+                  }}
+                >
+                  <div className="absolute inset-0 rounded-full" style={{ background: "linear-gradient(155deg, rgba(255,255,255,0.28) 0%, transparent 40%)" }} />
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" className="relative z-10 translate-x-0.5 text-white drop-shadow">
+                    <path d="M6 4.5L19.5 12 6 19.5V4.5Z" fill="currentColor"/>
+                  </svg>
+                </div>
               </div>
               <div 
-                className="w-1/2 aspect-[4/3] rounded-lg overflow-hidden shadow-xl rotate-3 mt-8 border border-brand-cream/10 cursor-pointer"
-                onClick={() => openVideo(heroVideos.right)}
+                className="relative w-1/2 aspect-[4/3] rounded-lg overflow-hidden shadow-xl rotate-3 mt-8 border border-brand-cream/10 cursor-pointer group"
+                onClick={() => openVideo(1)}
               >
-                <img src={portfolio1} alt="" className="w-full h-full object-cover grayscale-[10%]" />
+                <img src={portfolio1} alt="" className="w-full h-full object-cover grayscale-[10%] transition-transform duration-700 group-hover:scale-105" />
+                <div className="absolute inset-0 bg-brand-dark/20 transition-opacity duration-300 group-hover:opacity-0" />
+                <div
+                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 w-16 h-16 rounded-full flex items-center justify-center transition-all duration-300 group-hover:scale-110"
+                  style={{
+                    background: "linear-gradient(145deg, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.06) 100%)",
+                    backdropFilter: "blur(20px) saturate(180%)",
+                    WebkitBackdropFilter: "blur(20px) saturate(180%)",
+                    border: "1px solid rgba(255,255,255,0.35)",
+                    boxShadow: "0 2px 16px rgba(0,0,0,0.25), inset 0 1.5px 0 rgba(255,255,255,0.5), inset 0 -1px 0 rgba(255,255,255,0.08)",
+                  }}
+                >
+                  <div className="absolute inset-0 rounded-full" style={{ background: "linear-gradient(155deg, rgba(255,255,255,0.28) 0%, transparent 40%)" }} />
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" className="relative z-10 translate-x-0.5 text-white drop-shadow">
+                    <path d="M6 4.5L19.5 12 6 19.5V4.5Z" fill="currentColor"/>
+                  </svg>
+                </div>
               </div>
             </div>
           </div>
@@ -292,64 +310,29 @@ export default function HeroSection() {
         {/* Bottom Bar: Clean Layout */}
         <div className="w-full flex flex-col md:flex-row items-center md:items-end justify-between gap-6 md:gap-0 animate-fade-in text-center md:text-left mt-8 md:mt-0" style={{ animationDelay: "1.2s" }}>
 
-          <div className="max-w-[320px]">
+          <div className="max-w-[340px]">
             <p className="font-sans text-brand-cream/60 text-[10px] uppercase tracking-[0.2em] leading-relaxed mx-auto md:mx-0">
-              We craft emotional, timeless wedding edits for modern couples and filmmakers worldwide.
+              Every wedding you outsource to us is a weekend back with your family — or another $3K booking on your calendar.
             </p>
           </div>
 
           <div className="flex flex-row items-center justify-center gap-4 w-full md:w-auto">
-            <a href="#portfolio" className="btn-primary py-3 px-6 md:px-8 text-[11px] whitespace-nowrap">
-              View Our Work
+            <a href="#contact" className="btn-primary py-3 px-6 md:px-8 text-[11px] whitespace-nowrap">
+              Get Your Free Test Edit
             </a>
-            <a href="#contact" className="btn-outline-light py-3 px-6 md:px-8 text-[11px] whitespace-nowrap">
-              Get in Touch
+            <a href="#portfolio" className="btn-outline-light py-3 px-6 md:px-8 text-[11px] whitespace-nowrap">
+              See Our Work
             </a>
           </div>
         </div>
       </div>
 
-      {/* Video Lightbox (Reusing styles from Portfolio) */}
-      {lightboxOpen && activeVideo && (
-        <div
-          className="fixed inset-0 z-[100] bg-brand-dark/96 flex items-center justify-center p-4 animate-fade-in"
-          onClick={closeVideo}
-        >
-          <button
-            className="absolute top-6 right-6 text-brand-cream/70 hover:text-brand-cream transition-colors z-[110]"
-            onClick={closeVideo}
-            aria-label="Close"
-          >
-            <X size={32} />
-          </button>
-
-          <div className="w-full max-w-5xl" onClick={(e) => e.stopPropagation()}>
-            {activeVideo.vimeoId ? (
-              <div className="relative aspect-video w-full bg-brand-burgundy overflow-hidden rounded-2xl shadow-2xl border border-brand-cream/10 animate-scale-in">
-                <iframe
-                  src={`https://player.vimeo.com/video/${activeVideo.vimeoId}?autoplay=1&title=0&byline=0&portrait=0`}
-                  className="absolute inset-0 w-full h-full"
-                  frameBorder="0"
-                  allow="autoplay; fullscreen; picture-in-picture"
-                  allowFullScreen
-                ></iframe>
-              </div>
-            ) : (
-              <div className="relative aspect-video w-full bg-black rounded-2xl border border-brand-cream/10 overflow-hidden shadow-2xl animate-scale-in">
-                <video
-                  src={activeVideo.videoUrl}
-                  className="absolute inset-0 w-full h-full object-cover"
-                  autoPlay
-                  controls
-                  playsInline
-                />
-              </div>
-            )}
-            <div className="mt-6 text-center animate-fade-up" style={{ animationDelay: "0.3s" }}>
-              <p className="font-serif text-brand-cream text-2xl font-extrabold uppercase tracking-widest">{activeVideo.title}</p>
-            </div>
-          </div>
-        </div>
+      {activeIndex !== null && (
+        <VideoModal
+          videos={heroVideos}
+          startIndex={activeIndex}
+          onClose={() => setActiveIndex(null)}
+        />
       )}
     </section>
   );

@@ -1,6 +1,14 @@
-import logoIcon from "@/assets/logo-icon.png";
+import logoLight from "@/assets/logo-vector.svg";
 
-const footerLinks = ["Portfolio", "Services", "Investment", "Process", "Contact"];
+const footerLinks = [
+  { label: "Portfolio", href: "#portfolio" },
+  { label: "Services", href: "#services" },
+  { label: "Why GBW", href: "#why-outsource" },
+  { label: "About", href: "#about" },
+  { label: "Pricing", href: "#investment" },
+  { label: "Process", href: "#process" },
+  { label: "Contact", href: "#contact" },
+];
 
 const socials = [
   {
@@ -28,32 +36,98 @@ const socials = [
 export default function Footer() {
   return (
     <footer className="section-dark border-t border-white/5 relative overflow-hidden">
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden" aria-hidden="true">
-        <span className="font-serif font-extrabold uppercase whitespace-nowrap" style={{ fontSize: "clamp(5rem, 15vw, 14rem)", color: "hsl(188 41% 25% / 0.12)", letterSpacing: "0.08em" }}>Ginger Beer</span>
+      {/* Watermark */}
+      <div
+        className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden"
+        aria-hidden="true"
+      >
+        <span
+          className="font-serif font-extrabold uppercase whitespace-nowrap"
+          style={{
+            fontSize: "clamp(5rem, 15vw, 14rem)",
+            color: "hsl(188 41% 25% / 0.12)",
+            letterSpacing: "0.08em",
+          }}
+        >
+          Ginger Beer
+        </span>
       </div>
+
       <div className="max-w-7xl mx-auto px-6 md:px-12 py-20 relative">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-0 mb-16">
+
+          {/* Brand */}
           <div className="flex flex-col gap-5">
-            <img src={logoIcon} alt="Ginger Beer Films" className="h-14 w-auto object-contain object-left" style={{ filter: "brightness(0) saturate(100%) invert(85%) sepia(15%) saturate(500%) hue-rotate(5deg)" }} />
-            <p className="font-sans text-brand-cream/40 text-sm leading-relaxed max-w-xs">Post-production for wedding filmmakers. Fast edits. Clean grades. Zero drama.</p>
+            <a href="#" aria-label="Go to top" className="inline-block w-fit">
+              <img
+                src={logoLight}
+                alt="Ginger Beer Films"
+                className="h-[34px] md:h-[38px] w-auto object-contain object-left"
+                style={{ filter: "brightness(0) saturate(100%) invert(85%) sepia(15%) saturate(500%) hue-rotate(5deg)" }}
+              />
+            </a>
+            <p className="font-sans text-brand-cream/40 text-sm leading-relaxed max-w-xs">
+              Post-production for wedding filmmakers. Fast edits. Clean grades. Zero drama.
+            </p>
+            {/* Socials */}
             <div className="flex gap-4 mt-2">
-              {socials.map((s) => (<a key={s.label} href={s.href} aria-label={s.label} className="text-brand-cream/40 hover:text-brand-sand transition-colors duration-200">{s.icon}</a>))}
+              {socials.map((s) => (
+                <a
+                  key={s.label}
+                  href={s.href}
+                  aria-label={s.label}
+                  className="text-brand-cream/40 hover:text-brand-sand transition-colors duration-200"
+                >
+                  {s.icon}
+                </a>
+              ))}
             </div>
           </div>
+
+          {/* Nav */}
           <div className="flex flex-col gap-4 md:items-center">
             <p className="font-sans text-[10px] uppercase tracking-[0.25em] text-brand-cream/25 mb-2">Pages</p>
-            {footerLinks.map((link) => (<a key={link} href={`#${link.toLowerCase()}`} className="nav-link font-sans text-sm text-brand-cream/50 hover:text-brand-cream transition-colors duration-200 w-fit">{link}</a>))}
+            {footerLinks.map((link) => (
+              <a
+                key={link.label}
+                href={link.href}
+                className="nav-link font-sans text-sm text-brand-cream/50 hover:text-brand-cream transition-colors duration-200 w-fit"
+              >
+                {link.label}
+              </a>
+            ))}
           </div>
+
+          {/* Contact */}
           <div className="flex flex-col gap-4 md:items-end">
             <p className="font-sans text-[10px] uppercase tracking-[0.25em] text-brand-cream/25 mb-2">Get In Touch</p>
-            <a href="mailto:hello@gingerbeerweddings.com" className="font-sans text-sm text-brand-cream/50 hover:text-brand-cream transition-colors">hello@gingerbeerweddings.com</a>
-            <a href="#contact" className="btn-primary mt-4">Free Test Edit</a>
+            <a
+              href="mailto:hello@gingerbeerweddings.com"
+              className="font-sans text-sm text-brand-cream/50 hover:text-brand-cream transition-colors"
+            >
+              hello@gingerbeerweddings.com
+            </a>
+            <a
+              href="#contact"
+              className="btn-primary mt-4"
+            >
+              Free Test Edit
+            </a>
           </div>
         </div>
+
         <div className="divider-dark" />
+
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pt-8">
-          <p className="font-sans text-[11px] text-brand-cream/20 uppercase tracking-widest">© {new Date().getFullYear()} Ginger Beer Films. All rights reserved.</p>
-          <p className="font-sans text-[11px] text-brand-cream/20 uppercase tracking-widest">EU · Remote Worldwide</p>
+          <p className="font-sans text-[11px] text-brand-cream/20 uppercase tracking-widest">
+            © {new Date().getFullYear()} Ginger Beer Films. All rights reserved.
+          </p>
+          <div className="flex flex-wrap gap-4 md:gap-8 font-sans text-[11px] text-brand-cream/20 uppercase tracking-widest">
+            <a href="/terms" className="hover:text-brand-cream transition-colors duration-200">
+              Terms & Conditions
+            </a>
+            <span>European Union • Remote Worldwide</span>
+          </div>
         </div>
       </div>
     </footer>
