@@ -2,22 +2,16 @@ import { useEffect } from "react";
 
 interface Props { open: boolean; onClose: () => void; }
 
+const CALENDLY_URL =
+  "https://calendly.com/project-gingerbeerweddings/30min" +
+  "?hide_gdpr_banner=1&background_color=fdf5f0&text_color=0B2C31&primary_color=255259";
+
 export default function BookCallDialog({ open, onClose }: Props) {
   // Lock body scroll while open
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
   }, [open]);
-
-  // Load Calendly widget script once
-  useEffect(() => {
-    if (document.getElementById("calendly-script")) return;
-    const script = document.createElement("script");
-    script.id  = "calendly-script";
-    script.src = "https://assets.calendly.com/assets/external/widget.js";
-    script.async = true;
-    document.head.appendChild(script);
-  }, []);
 
   if (!open) return null;
 
@@ -57,11 +51,14 @@ export default function BookCallDialog({ open, onClose }: Props) {
           </p>
         </div>
 
-        {/* Calendly inline widget */}
-        <div
-          className="calendly-inline-widget w-full"
-          data-url="https://calendly.com/project-gingerbeerweddings/30min?hide_gdpr_banner=1&background_color=fdf5f0&text_color=0B2C31&primary_color=255259"
-          style={{ minWidth: "320px", height: "660px" }}
+        {/* Calendly — прямой iframe, не зависит от внешнего скрипта */}
+        <iframe
+          src={CALENDLY_URL}
+          width="100%"
+          height="660"
+          frameBorder="0"
+          title="Book a call"
+          style={{ display: "block", minWidth: "320px" }}
         />
 
         {/* Bottom shimmer */}
