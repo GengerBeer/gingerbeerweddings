@@ -1,14 +1,8 @@
 import { useState, useEffect, useRef } from "react";
-
-declare global {
-  interface Window { Vimeo: any; }
-}
-type VimeoPlayer = any;
+import { useVimeoPlayer } from "@/hooks/useVimeoPlayer";
 
 export interface VideoItem {
-  /** Vimeo video ID (takes priority if provided) */
   vimeoId?: string;
-  /** Local/remote video file URL (used only if vimeoId is absent) */
   videoUrl?: string;
   location?: string;
   title?: string;
@@ -22,116 +16,72 @@ interface Props {
 
 export default function VideoModal({ videos, startIndex, onClose }: Props) {
   const [index, setIndex] = useState(startIndex);
-  const video = videos[index];
+  const video   = videos[index];
   const hasPrev = index > 0;
   const hasNext = index < videos.length - 1;
   const isVimeo = !!video.vimeoId;
 
-  // Vimeo refs & state
   const iframeRef  = useRef<HTMLIFrameElement>(null);
   const videoRef   = useRef<HTMLVideoElement>(null);
-  const playerRef  = useRef<VimeoPlayer | null>(null);
   const cardRef    = useRef<HTMLDivElement>(null);
   const idleTimer  = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const [isPlaying,    setIsPlaying]    = useState(false);
-  const [progress,     setProgress]     = useState(0);
-  const [duration,     setDuration]     = useState(0);
-  const [volume,       setVolume]       = useState(1);
-  const [qualities,    setQualities]    = useState<{ id: string; label: string; active: boolean }[]>([]);
-  const [activeQuality,setActiveQuality] = useState("auto");
-  const [showQuality,  setShowQuality]  = useState(false);
-  const [isBuffering,  setIsBuffering]  = useState(false);
-  const [isFullscreen, setIsFullscreen] = useState(false);
-  const [showControls, setShowControls] = useState(true);
+  // ── Vimeo player (hook handles all SDK logic) ─────────────────────────────
+  const vimeo = useVimeoPlayer(iframeRef, { enabled: isVimeo });
 
-  // ── Load Vimeo SDK once ──────────────────────────────────────────────────
-  useEffect(() => {
-    if (document.getElementById("vimeo-player-sdk")) return;
-    const script = document.createElement("script");
-    script.id  = "vimeo-player-sdk";
-    script.src = "https://player.vimeo.com/api/player.js";
-    script.async = true;
-    document.head.appendChild(script);
-  }, []);
+  // ── HTML5 video state ─────────────────────────────────────────────────────
+  const [html5Playing,   setHtml5Playing]   = useState(false);
+  const [html5Progress,  setHtml5Progress]  = useState(0);
+  const [html5Duration,  setHtml5Duration]  = useState(0);
+  const [html5Volume,    setHtml5Volume]    = useState(1);
 
-  // ── Vimeo init ──────────────────────────────────────────────────────────
-  useEffect(() => {
-    if (!isVimeo) return;
-    setProgress(0); setIsPlaying(false);
-    playerRef.current = null;
-    let cancelled = false;
-    let attempts = 0;
-    const init = () => {
-      if (cancelled) return;
-      if (!iframeRef.current || !window.Vimeo?.Player) {
-        if (++attempts < 40) setTimeout(init, 300);
-        return;
-      }
-      const player = new window.Vimeo.Player(iframeRef.current);
-      playerRef.current = player;
-      player.on("play",        () => { if (!cancelled) { setIsPlaying(true);  setIsBuffering(false); } });
-      player.on("pause",       () => { if (!cancelled) setIsPlaying(false); });
-      player.on("ended",       () => { if (!cancelled) { setIsPlaying(false); setProgress(0); } });
-      player.on("timeupdate",  (d: { percent: number }) => { if (!cancelled) setProgress(d.percent * 100); });
-      player.on("bufferstart", () => { if (!cancelled) setIsBuffering(true); });
-      player.on("bufferend",   () => { if (!cancelled) setIsBuffering(false); });
-      player.getDuration().then((d: number) => { if (!cancelled) setDuration(d); }).catch(() => {});
-      player.getQualities().then((q: any) => {
-        if (!cancelled && q?.length) { setQualities(q); setActiveQuality("auto"); }
-      }).catch(() => {});
-    };
-    // Small delay so iframe is fully mounted before SDK tries to attach
-    setTimeout(init, 200);
-    return () => {
-      cancelled = true;
-      playerRef.current?.pause().catch(() => {});
-      playerRef.current = null;
-    };
-  }, [index, isVimeo]);
-
-  // ── HTML5 video sync ─────────────────────────────────────────────────────
   useEffect(() => {
     if (isVimeo) return;
     const el = videoRef.current;
     if (!el) return;
-    const onPlay     = () => setIsPlaying(true);
-    const onPause    = () => setIsPlaying(false);
-    const onEnded    = () => { setIsPlaying(false); setProgress(0); };
-    const onTime     = () => setProgress(el.duration ? (el.currentTime / el.duration) * 100 : 0);
-    const onMeta     = () => setDuration(el.duration);
-    el.addEventListener("play",       onPlay);
-    el.addEventListener("pause",      onPause);
-    el.addEventListener("ended",      onEnded);
-    el.addEventListener("timeupdate", onTime);
-    el.addEventListener("loadedmetadata", onMeta);
+    const onPlay  = () => setHtml5Playing(true);
+    const onPause = () => setHtml5Playing(false);
+    const onEnded = () => { setHtml5Playing(false); setHtml5Progress(0); };
+    const onTime  = () => setHtml5Progress(el.duration ? (el.currentTime / el.duration) * 100 : 0);
+    const onMeta  = () => setHtml5Duration(el.duration);
+    el.addEventListener("play",            onPlay);
+    el.addEventListener("pause",           onPause);
+    el.addEventListener("ended",           onEnded);
+    el.addEventListener("timeupdate",      onTime);
+    el.addEventListener("loadedmetadata",  onMeta);
     return () => {
-      el.removeEventListener("play",       onPlay);
-      el.removeEventListener("pause",      onPause);
-      el.removeEventListener("ended",      onEnded);
-      el.removeEventListener("timeupdate", onTime);
-      el.removeEventListener("loadedmetadata", onMeta);
+      el.removeEventListener("play",            onPlay);
+      el.removeEventListener("pause",           onPause);
+      el.removeEventListener("ended",           onEnded);
+      el.removeEventListener("timeupdate",      onTime);
+      el.removeEventListener("loadedmetadata",  onMeta);
     };
   }, [index, isVimeo]);
 
-  // ── Fullscreen ───────────────────────────────────────────────────────────
+  // ── Unified state (Vimeo or HTML5) ────────────────────────────────────────
+  const isPlaying   = isVimeo ? vimeo.isPlaying   : html5Playing;
+  const progress    = isVimeo ? vimeo.progress     : html5Progress;
+  const volume      = isVimeo ? vimeo.volume       : html5Volume;
+  const isBuffering = isVimeo ? vimeo.isBuffering  : false;
+
+  // ── Fullscreen ────────────────────────────────────────────────────────────
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showControls, setShowControls] = useState(true);
+  const [showQuality,  setShowQuality]  = useState(false);
+
   useEffect(() => {
     const onChange = () => {
       const fs = !!document.fullscreenElement;
       setIsFullscreen(fs);
-      if (!fs) {
-        setShowControls(true);
-        if (idleTimer.current) clearTimeout(idleTimer.current);
-      } else {
-        setShowControls(true);
-        idleTimer.current = setTimeout(() => setShowControls(false), 2500);
-      }
+      setShowControls(true);
+      if (idleTimer.current) clearTimeout(idleTimer.current);
+      if (fs) idleTimer.current = setTimeout(() => setShowControls(false), 2500);
     };
     document.addEventListener("fullscreenchange", onChange);
     return () => document.removeEventListener("fullscreenchange", onChange);
   }, []);
 
-  // ── Keyboard ─────────────────────────────────────────────────────────────
+  // ── Keyboard ──────────────────────────────────────────────────────────────
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape" && !document.fullscreenElement) { onClose(); return; }
@@ -144,11 +94,10 @@ export default function VideoModal({ videos, startIndex, onClose }: Props) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hasNext, hasPrev, onClose, isPlaying]);
 
-  // ── Handlers ─────────────────────────────────────────────────────────────
+  // ── Controls ──────────────────────────────────────────────────────────────
   const togglePlay = () => {
     if (isVimeo) {
-      if (!playerRef.current) return;
-      isPlaying ? playerRef.current.pause() : playerRef.current.play();
+      vimeo.togglePlay();
     } else {
       const el = videoRef.current;
       if (!el) return;
@@ -157,24 +106,25 @@ export default function VideoModal({ videos, startIndex, onClose }: Props) {
   };
 
   const handleSeek = (e: React.MouseEvent<HTMLDivElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const ratio = (e.clientX - rect.left) / rect.width;
+    const ratio = (e.clientX - e.currentTarget.getBoundingClientRect().left) / e.currentTarget.offsetWidth;
     if (isVimeo) {
-      if (!playerRef.current || !duration) return;
-      playerRef.current.setCurrentTime(ratio * duration);
+      vimeo.seek(ratio);
     } else {
       const el = videoRef.current;
-      if (!el || !duration) return;
-      el.currentTime = ratio * duration;
+      if (!el || !html5Duration) return;
+      el.currentTime = ratio * html5Duration;
+      setHtml5Progress(ratio * 100);
     }
-    setProgress(ratio * 100);
   };
 
   const handleVolume = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = parseFloat(e.target.value);
-    setVolume(val);
-    if (isVimeo) playerRef.current?.setVolume(val);
-    else if (videoRef.current) videoRef.current.volume = val;
+    if (isVimeo) {
+      vimeo.setVolume(val);
+    } else {
+      setHtml5Volume(val);
+      if (videoRef.current) videoRef.current.volume = val;
+    }
   };
 
   const goFullscreen = () => {
@@ -202,7 +152,7 @@ export default function VideoModal({ videos, startIndex, onClose }: Props) {
         onClick={(e) => e.stopPropagation()}
         style={{ border: isFullscreen ? "none" : "1px solid rgba(250,238,233,0.08)" }}
       >
-        {/* Header — hidden in fullscreen */}
+        {/* Header */}
         {!isFullscreen && (
           <div className="flex items-center justify-between px-5 py-3.5 bg-[#0B2C31]/90">
             <span className="inline-flex items-center gap-1.5 font-sans text-[10px] uppercase tracking-[0.18em] text-[#FAEEE9]/70">
@@ -229,7 +179,7 @@ export default function VideoModal({ videos, startIndex, onClose }: Props) {
                   <div className="w-px h-4 bg-[#FAEEE9]/15 mx-2" />
                 </>
               )}
-              <button onClick={onClose} className="w-7 h-7 flex items-center justify-center text-[#FAEEE9]/50 hover:text-[#FAEEE9] transition-colors" title="Close">
+              <button onClick={onClose} className="w-7 h-7 flex items-center justify-center text-[#FAEEE9]/50 hover:text-[#FAEEE9] transition-colors">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
               </button>
             </div>
@@ -239,6 +189,7 @@ export default function VideoModal({ videos, startIndex, onClose }: Props) {
         {/* Video area */}
         <div
           className="relative bg-black"
+          onMouseMove={resetIdle}
           style={{
             aspectRatio: isFullscreen ? undefined : "16/9",
             width:  isFullscreen ? "100vw" : undefined,
@@ -250,7 +201,7 @@ export default function VideoModal({ videos, startIndex, onClose }: Props) {
           {isVimeo && (
             <iframe
               ref={iframeRef}
-              key={`${video.vimeoId}-${index}`}
+              key={`vimeo-${video.vimeoId}-${index}`}
               src={`https://player.vimeo.com/video/${video.vimeoId}?autoplay=1&badge=0&autopause=0&app_id=58479&title=0&byline=0&portrait=0&controls=0&dnt=1`}
               allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media"
               allowFullScreen
@@ -262,7 +213,7 @@ export default function VideoModal({ videos, startIndex, onClose }: Props) {
           {!isVimeo && (
             <video
               ref={videoRef}
-              key={`${video.videoUrl}-${index}`}
+              key={`vid-${video.videoUrl}-${index}`}
               src={video.videoUrl}
               autoPlay
               playsInline
@@ -270,17 +221,23 @@ export default function VideoModal({ videos, startIndex, onClose }: Props) {
             />
           )}
 
-          {/* Transparent interceptor — captures mouse/dblclick above iframe/video */}
+          {/* Click interceptor */}
           <div
             className="absolute inset-0 z-10"
             onClick={togglePlay}
-            onMouseMove={resetIdle}
             onDoubleClick={goFullscreen}
           />
 
-          {/* Custom controls overlay */}
+          {/* Buffering spinner */}
+          {isBuffering && (
+            <div className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none">
+              <div className="w-10 h-10 rounded-full border-2 border-white/20 border-t-white animate-spin" />
+            </div>
+          )}
+
+          {/* Controls overlay */}
           <div
-            className="absolute inset-x-0 bottom-0 z-20 px-4 pb-4 pt-10 flex flex-col gap-2 transition-opacity duration-500"
+            className="absolute inset-x-0 bottom-0 z-30 px-4 pb-4 pt-10 flex flex-col gap-2 transition-opacity duration-500"
             style={{
               background: "linear-gradient(transparent, rgba(0,0,0,0.65))",
               opacity: showControls ? 1 : 0,
@@ -289,21 +246,11 @@ export default function VideoModal({ videos, startIndex, onClose }: Props) {
           >
             {/* Progress bar */}
             <div
-              className="w-full h-1 rounded-full overflow-hidden cursor-pointer relative"
-              style={{ background: isBuffering ? undefined : "rgba(255,255,255,0.2)" }}
+              className="w-full h-1 rounded-full overflow-hidden cursor-pointer"
+              style={{ background: "rgba(255,255,255,0.2)" }}
               onClick={handleSeek}
             >
-              {isBuffering && (
-                <div className="absolute inset-0 rounded-full overflow-hidden">
-                  <div className="absolute inset-0 animate-shimmer"
-                    style={{
-                      background: "linear-gradient(90deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.35) 50%, rgba(255,255,255,0.1) 100%)",
-                      backgroundSize: "200% 100%",
-                    }}
-                  />
-                </div>
-              )}
-              <div className="h-full bg-white rounded-full transition-all duration-300 relative z-10" style={{ width: `${progress}%` }} />
+              <div className="h-full bg-white rounded-full transition-all duration-300" style={{ width: `${progress}%` }} />
             </div>
 
             {/* Bottom row */}
@@ -320,26 +267,21 @@ export default function VideoModal({ videos, startIndex, onClose }: Props) {
               <input type="range" min="0" max="1" step="0.05" value={volume} onChange={handleVolume} className="w-16 h-1 accent-white cursor-pointer" />
 
               {/* Quality (Vimeo only) */}
-              {isVimeo && qualities.length > 0 && (
+              {isVimeo && vimeo.qualities.length > 0 && (
                 <div className="relative">
                   <button
                     onClick={() => setShowQuality(v => !v)}
                     className="text-white/60 hover:text-white text-[10px] font-sans uppercase tracking-widest px-2 py-0.5 rounded border border-white/20 hover:border-white/40 transition-colors"
                   >
-                    {activeQuality === "auto" ? "Auto" : activeQuality.toUpperCase()}
+                    {vimeo.activeQuality === "auto" ? "Auto" : vimeo.activeQuality.toUpperCase()}
                   </button>
                   {showQuality && (
                     <div className="absolute bottom-8 left-0 bg-black/90 backdrop-blur-md border border-white/10 rounded-xl overflow-hidden min-w-[72px] shadow-2xl">
-                      {[{ id: "auto", label: "Auto" }, ...qualities].map(q => (
+                      {[{ id: "auto", label: "Auto" }, ...vimeo.qualities].map(q => (
                         <button
                           key={q.id}
-                          onClick={() => {
-                            playerRef.current?.setQuality(q.id).catch(() => {});
-                            setActiveQuality(q.id);
-                            setShowQuality(false);
-                            setIsBuffering(true);
-                          }}
-                          className={`block w-full text-left px-3 py-1.5 text-[11px] transition-colors hover:bg-white/10 ${activeQuality === q.id ? "text-white font-semibold" : "text-white/60"}`}
+                          onClick={() => { vimeo.setQuality(q.id); setShowQuality(false); }}
+                          className={`block w-full text-left px-3 py-1.5 text-[11px] transition-colors hover:bg-white/10 ${vimeo.activeQuality === q.id ? "text-white font-semibold" : "text-white/60"}`}
                         >
                           {q.label}
                         </button>
@@ -350,7 +292,7 @@ export default function VideoModal({ videos, startIndex, onClose }: Props) {
               )}
 
               {/* Fullscreen */}
-              <button onClick={goFullscreen} className="ml-auto w-7 h-7 flex items-center justify-center text-white/60 hover:text-white transition-colors" title="Full screen">
+              <button onClick={goFullscreen} className="ml-auto w-7 h-7 flex items-center justify-center text-white/60 hover:text-white transition-colors">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M8 3v5H3M21 8h-5V3M3 16h5v5M16 21v-5h5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
               </button>
             </div>
