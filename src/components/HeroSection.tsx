@@ -316,11 +316,11 @@ export default function HeroSection() {
             </p>
           </div>
 
-          <div className="flex flex-row items-center justify-center gap-4 w-full md:w-auto">
-            <a href="#contact" className="btn-primary py-3 px-6 md:px-8 text-[11px] whitespace-nowrap">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 w-full md:w-auto">
+            <a href="#contact" className="btn-primary py-3 px-6 md:px-8 text-[11px] w-full sm:w-auto justify-center">
               Get Your Free Test Edit
             </a>
-            <a href="#portfolio" className="btn-outline-light py-3 px-6 md:px-8 text-[11px] whitespace-nowrap">
+            <a href="#portfolio" className="btn-outline-light py-3 px-6 md:px-8 text-[11px] w-full sm:w-auto justify-center">
               See Our Work
             </a>
           </div>
