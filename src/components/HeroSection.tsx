@@ -13,7 +13,6 @@ export default function HeroSection() {
   const sectionRef = useRef<HTMLElement>(null);
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
-  // Refs for cursor-tracking — avoids React re-renders on every mousemove
   const leftBtnRef = useRef<HTMLDivElement>(null);
   const rightBtnRef = useRef<HTMLDivElement>(null);
   const leftImgRef = useRef<HTMLImageElement>(null);
@@ -62,24 +61,14 @@ export default function HeroSection() {
     const section = sectionRef.current;
     if (!section) return;
 
-    const leftImg = section.querySelector(".parallax-left") as HTMLElement | null;
+    const leftImg  = section.querySelector(".parallax-left")  as HTMLElement | null;
     const rightImg = section.querySelector(".parallax-right") as HTMLElement | null;
 
     const handleMouseMove = (e: MouseEvent) => {
-      const { clientX, clientY } = e;
-      const { innerWidth, innerHeight } = window;
-
-      const xPos = (clientX / innerWidth) - 0.5;
-      const yPos = (clientY / innerHeight) - 0.5;
-
-      if (leftImg) {
-        // Move left image with a dynamic offset
-        leftImg.style.transform = `translate(${xPos * 25}px, ${yPos * 25}px) rotate(-6deg)`;
-      }
-      if (rightImg) {
-        // Move right image in slightly different way
-        rightImg.style.transform = `translate(${xPos * -35}px, ${yPos * -15}px) rotate(3deg)`;
-      }
+      const xPos = (e.clientX / window.innerWidth)  - 0.5;
+      const yPos = (e.clientY / window.innerHeight) - 0.5;
+      if (leftImg)  leftImg.style.transform  = `translate(${xPos * 25}px, ${yPos * 25}px) rotate(-6deg)`;
+      if (rightImg) rightImg.style.transform = `translate(${xPos * -35}px, ${yPos * -15}px) rotate(3deg)`;
     };
 
     window.addEventListener("mousemove", handleMouseMove);
@@ -94,11 +83,7 @@ export default function HeroSection() {
       {/* Background with parallax */}
       <div
         className="hero-bg absolute inset-0"
-        style={{
-          backgroundImage: `url(${heroBg})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-        }}
+        style={{ backgroundImage: `url(${heroBg})`, backgroundSize: "cover", backgroundPosition: "center" }}
         aria-hidden="true"
       />
 
@@ -106,130 +91,57 @@ export default function HeroSection() {
       <div className="absolute inset-0 hero-overlay" aria-hidden="true" />
 
       {/* Animated gradient orbs */}
-      <div
-        className="orb orb-1 absolute w-[500px] h-[500px] -top-24 -left-24 animate-float"
-        aria-hidden="true"
-      />
-      <div
-        className="orb orb-2 absolute w-[400px] h-[400px] bottom-32 -right-16 animate-float"
-        style={{ animationDelay: "-3s" }}
-        aria-hidden="true"
-      />
-      <div
-        className="orb orb-3 absolute w-[300px] h-[300px] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 animate-float"
-        style={{ animationDelay: "-6s" }}
-        aria-hidden="true"
-      />
+      <div className="orb orb-1 absolute w-[500px] h-[500px] -top-24 -left-24 animate-float" aria-hidden="true" />
+      <div className="orb orb-2 absolute w-[400px] h-[400px] bottom-32 -right-16 animate-float" style={{ animationDelay: "-3s" }} aria-hidden="true" />
+      <div className="orb orb-3 absolute w-[300px] h-[300px] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 animate-float" style={{ animationDelay: "-6s" }} aria-hidden="true" />
 
       {/* Main content grid */}
       <div className="relative z-10 w-full h-full max-w-7xl mx-auto px-6 md:px-12 flex flex-col justify-between py-12 md:py-20 lg:py-24">
 
-        {/* Top Spacer */}
         <div className="h-10" />
 
-        {/* Center: Editorial Layout Title with Staggered Cascading */}
         <div className="flex-1 flex flex-col justify-center items-center relative lg:mt-[-4vh]">
 
+          {/* Left floating card */}
           <div
             className="parallax-left absolute top-[15%] md:top-[10%] left-0 lg:left-[-10%] xl:left-[-15%] 2xl:left-[-20%] w-[25vw] md:w-[22vw] lg:w-[20vw] aspect-[3/4] rounded-2xl overflow-hidden shadow-2xl animate-fade-in z-20 border border-brand-cream/10 hidden md:block transition-transform duration-700 ease-out isolate"
-            style={{
-              animationDelay: "0.5s",
-              transform: "translate(10px, -10px) rotate(-6deg)",
-              willChange: "transform",
-              WebkitMaskImage: "-webkit-radial-gradient(white, black)",
-              cursor: "none",
-            }}
+            style={{ animationDelay: "0.5s", transform: "translate(10px, -10px) rotate(-6deg)", willChange: "transform", WebkitMaskImage: "-webkit-radial-gradient(white, black)", cursor: "none" }}
             onClick={() => openVideo(0)}
             onMouseEnter={() => handleCardEnter("left")}
             onMouseLeave={() => handleCardLeave("left")}
             onMouseMove={(e) => handleCardMove(e, "left")}
           >
-            <img
-              ref={leftImgRef}
-              src={portfolio2}
-              alt=""
-              className="w-full h-full object-cover"
-              style={{
-                backfaceVisibility: "hidden",
-                transform: "translateZ(0)",
-                transition: "filter 0.5s ease, scale 0.5s ease",
-                filter: "grayscale(100%) contrast(110%)",
-                scale: "1",
-              }}
+            <img ref={leftImgRef} src={portfolio2} alt="" className="w-full h-full object-cover"
+              style={{ backfaceVisibility: "hidden", transform: "translateZ(0)", transition: "filter 0.5s ease, scale 0.5s ease", filter: "grayscale(100%) contrast(110%)", scale: "1" }}
             />
-            <div
-              ref={leftBtnRef}
-              className="absolute pointer-events-none rounded-full"
-              style={{
-                width: 64, height: 64,
-                left: 0, top: 0,
-                transform: "translate(-50%, -50%)",
-                opacity: 0,
-                transition: "opacity 0.25s ease",
-                background: "linear-gradient(145deg, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.04) 100%)",
-                backdropFilter: "blur(20px) saturate(180%)",
-                WebkitBackdropFilter: "blur(20px) saturate(180%)",
-                border: "1px solid rgba(255,255,255,0.4)",
-                boxShadow: "0 2px 16px rgba(0,0,0,0.2), inset 0 1.5px 0 rgba(255,255,255,0.55), inset 0 -1px 0 rgba(255,255,255,0.08)",
-              }}
+            <div ref={leftBtnRef} className="absolute pointer-events-none rounded-full"
+              style={{ width: 64, height: 64, left: 0, top: 0, transform: "translate(-50%, -50%)", opacity: 0, transition: "opacity 0.25s ease", background: "linear-gradient(145deg, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.04) 100%)", backdropFilter: "blur(20px) saturate(180%)", WebkitBackdropFilter: "blur(20px) saturate(180%)", border: "1px solid rgba(255,255,255,0.4)", boxShadow: "0 2px 16px rgba(0,0,0,0.2), inset 0 1.5px 0 rgba(255,255,255,0.55), inset 0 -1px 0 rgba(255,255,255,0.08)" }}
             >
               <div className="absolute inset-0 rounded-full" style={{ background: "linear-gradient(155deg, rgba(255,255,255,0.3) 0%, transparent 40%)" }} />
               <div className="w-full h-full flex items-center justify-center">
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" className="relative z-10 translate-x-0.5 text-white drop-shadow">
-                  <path d="M6 4.5L19.5 12 6 19.5V4.5Z" fill="currentColor"/>
-                </svg>
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" className="relative z-10 translate-x-0.5 text-white drop-shadow"><path d="M6 4.5L19.5 12 6 19.5V4.5Z" fill="currentColor"/></svg>
               </div>
             </div>
           </div>
 
-          {/* Right Color Image */}
+          {/* Right floating card */}
           <div
             className="parallax-right absolute top-[25%] md:top-[12%] right-0 lg:right-[-10%] xl:right-[-15%] 2xl:right-[-20%] w-[32vw] md:w-[28vw] lg:w-[28vw] aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl animate-fade-in z-20 border border-brand-cream/10 hidden md:block transition-transform duration-700 ease-out isolate"
-            style={{
-              transform: "translate(-15px, 5px) rotate(3deg)",
-              willChange: "transform",
-              WebkitMaskImage: "-webkit-radial-gradient(white, black)",
-              cursor: "none",
-            }}
+            style={{ transform: "translate(-15px, 5px) rotate(3deg)", willChange: "transform", WebkitMaskImage: "-webkit-radial-gradient(white, black)", cursor: "none" }}
             onClick={() => openVideo(1)}
             onMouseEnter={() => handleCardEnter("right")}
             onMouseLeave={() => handleCardLeave("right")}
             onMouseMove={(e) => handleCardMove(e, "right")}
           >
-            <img
-              ref={rightImgRef}
-              src={portfolio1}
-              alt=""
-              className="w-full h-full object-cover"
-              style={{
-                backfaceVisibility: "hidden",
-                transform: "translateZ(0)",
-                transition: "filter 0.5s ease, scale 0.5s ease",
-                filter: "grayscale(10%)",
-                scale: "1",
-              }}
+            <img ref={rightImgRef} src={portfolio1} alt="" className="w-full h-full object-cover"
+              style={{ backfaceVisibility: "hidden", transform: "translateZ(0)", transition: "filter 0.5s ease, scale 0.5s ease", filter: "grayscale(10%)", scale: "1" }}
             />
-            <div
-              ref={rightBtnRef}
-              className="absolute pointer-events-none rounded-full"
-              style={{
-                width: 80, height: 80,
-                left: 0, top: 0,
-                transform: "translate(-50%, -50%)",
-                opacity: 0,
-                transition: "opacity 0.25s ease",
-                background: "linear-gradient(145deg, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.04) 100%)",
-                backdropFilter: "blur(20px) saturate(180%)",
-                WebkitBackdropFilter: "blur(20px) saturate(180%)",
-                border: "1px solid rgba(255,255,255,0.4)",
-                boxShadow: "0 2px 16px rgba(0,0,0,0.2), inset 0 1.5px 0 rgba(255,255,255,0.55), inset 0 -1px 0 rgba(255,255,255,0.08)",
-              }}
+            <div ref={rightBtnRef} className="absolute pointer-events-none rounded-full"
+              style={{ width: 80, height: 80, left: 0, top: 0, transform: "translate(-50%, -50%)", opacity: 0, transition: "opacity 0.25s ease", background: "linear-gradient(145deg, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.04) 100%)", backdropFilter: "blur(20px) saturate(180%)", WebkitBackdropFilter: "blur(20px) saturate(180%)", border: "1px solid rgba(255,255,255,0.4)", boxShadow: "0 2px 16px rgba(0,0,0,0.2), inset 0 1.5px 0 rgba(255,255,255,0.55), inset 0 -1px 0 rgba(255,255,255,0.08)" }}
             >
               <div className="absolute inset-0 rounded-full" style={{ background: "linear-gradient(155deg, rgba(255,255,255,0.3) 0%, transparent 40%)" }} />
               <div className="w-full h-full flex items-center justify-center">
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" className="relative z-10 translate-x-0.5 text-white drop-shadow">
-                  <path d="M6 4.5L19.5 12 6 19.5V4.5Z" fill="currentColor"/>
-                </svg>
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" className="relative z-10 translate-x-0.5 text-white drop-shadow"><path d="M6 4.5L19.5 12 6 19.5V4.5Z" fill="currentColor"/></svg>
               </div>
             </div>
           </div>
@@ -242,7 +154,6 @@ export default function HeroSection() {
               >
                 Your Editing Team.
               </h1>
-
               <h2
                 className="font-serif text-[9.5vw] sm:text-[8.5vw] md:text-[7vw] lg:text-[5.5vw] xl:text-[5vw] text-brand-cream font-extrabold leading-[1] tracking-tight animate-fade-up mt-1 md:mt-2 translate-x-[4vw] md:translate-x-[6vw] lg:translate-x-[8vw] drop-shadow-[0_2px_15px_rgba(0,0,0,0.4)] whitespace-nowrap"
                 style={{ animationDelay: "0.4s" }}
@@ -257,70 +168,44 @@ export default function HeroSection() {
               </span>
             </div>
 
-            {/* Mobile-only Images (simplified vertical layout) */}
+            {/* Mobile-only images */}
             <div className="md:hidden flex w-full max-w-sm mx-auto justify-between gap-4 mt-12 pointer-events-auto">
-              <div 
-                className="relative w-1/2 aspect-[3/4] rounded-lg overflow-hidden shadow-xl -rotate-2 border border-brand-cream/10 cursor-pointer group"
-                onClick={() => openVideo(0)}
-              >
+              <div className="relative w-1/2 aspect-[3/4] rounded-lg overflow-hidden shadow-xl -rotate-2 border border-brand-cream/10 cursor-pointer group" onClick={() => openVideo(0)}>
                 <img src={portfolio2} alt="" className="w-full h-full object-cover grayscale-[100%] transition-transform duration-700 group-hover:scale-105" />
                 <div className="absolute inset-0 bg-brand-dark/20 transition-opacity duration-300 group-hover:opacity-0" />
-                <div
-                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 w-16 h-16 rounded-full flex items-center justify-center transition-all duration-300 group-hover:scale-110"
-                  style={{
-                    background: "linear-gradient(145deg, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.06) 100%)",
-                    backdropFilter: "blur(20px) saturate(180%)",
-                    WebkitBackdropFilter: "blur(20px) saturate(180%)",
-                    border: "1px solid rgba(255,255,255,0.35)",
-                    boxShadow: "0 2px 16px rgba(0,0,0,0.25), inset 0 1.5px 0 rgba(255,255,255,0.5), inset 0 -1px 0 rgba(255,255,255,0.08)",
-                  }}
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 w-16 h-16 rounded-full flex items-center justify-center transition-all duration-300 group-hover:scale-110"
+                  style={{ background: "linear-gradient(145deg, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.06) 100%)", backdropFilter: "blur(20px) saturate(180%)", WebkitBackdropFilter: "blur(20px) saturate(180%)", border: "1px solid rgba(255,255,255,0.35)", boxShadow: "0 2px 16px rgba(0,0,0,0.25), inset 0 1.5px 0 rgba(255,255,255,0.5), inset 0 -1px 0 rgba(255,255,255,0.08)" }}
                 >
                   <div className="absolute inset-0 rounded-full" style={{ background: "linear-gradient(155deg, rgba(255,255,255,0.28) 0%, transparent 40%)" }} />
-                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" className="relative z-10 translate-x-0.5 text-white drop-shadow">
-                    <path d="M6 4.5L19.5 12 6 19.5V4.5Z" fill="currentColor"/>
-                  </svg>
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" className="relative z-10 translate-x-0.5 text-white drop-shadow"><path d="M6 4.5L19.5 12 6 19.5V4.5Z" fill="currentColor"/></svg>
                 </div>
               </div>
-              <div 
-                className="relative w-1/2 aspect-[4/3] rounded-lg overflow-hidden shadow-xl rotate-3 mt-8 border border-brand-cream/10 cursor-pointer group"
-                onClick={() => openVideo(1)}
-              >
+              <div className="relative w-1/2 aspect-[4/3] rounded-lg overflow-hidden shadow-xl rotate-3 mt-8 border border-brand-cream/10 cursor-pointer group" onClick={() => openVideo(1)}>
                 <img src={portfolio1} alt="" className="w-full h-full object-cover grayscale-[10%] transition-transform duration-700 group-hover:scale-105" />
                 <div className="absolute inset-0 bg-brand-dark/20 transition-opacity duration-300 group-hover:opacity-0" />
-                <div
-                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 w-16 h-16 rounded-full flex items-center justify-center transition-all duration-300 group-hover:scale-110"
-                  style={{
-                    background: "linear-gradient(145deg, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.06) 100%)",
-                    backdropFilter: "blur(20px) saturate(180%)",
-                    WebkitBackdropFilter: "blur(20px) saturate(180%)",
-                    border: "1px solid rgba(255,255,255,0.35)",
-                    boxShadow: "0 2px 16px rgba(0,0,0,0.25), inset 0 1.5px 0 rgba(255,255,255,0.5), inset 0 -1px 0 rgba(255,255,255,0.08)",
-                  }}
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 w-16 h-16 rounded-full flex items-center justify-center transition-all duration-300 group-hover:scale-110"
+                  style={{ background: "linear-gradient(145deg, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.06) 100%)", backdropFilter: "blur(20px) saturate(180%)", WebkitBackdropFilter: "blur(20px) saturate(180%)", border: "1px solid rgba(255,255,255,0.35)", boxShadow: "0 2px 16px rgba(0,0,0,0.25), inset 0 1.5px 0 rgba(255,255,255,0.5), inset 0 -1px 0 rgba(255,255,255,0.08)" }}
                 >
                   <div className="absolute inset-0 rounded-full" style={{ background: "linear-gradient(155deg, rgba(255,255,255,0.28) 0%, transparent 40%)" }} />
-                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" className="relative z-10 translate-x-0.5 text-white drop-shadow">
-                    <path d="M6 4.5L19.5 12 6 19.5V4.5Z" fill="currentColor"/>
-                  </svg>
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" className="relative z-10 translate-x-0.5 text-white drop-shadow"><path d="M6 4.5L19.5 12 6 19.5V4.5Z" fill="currentColor"/></svg>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Bottom Bar: Clean Layout */}
+        {/* Bottom Bar */}
         <div className="w-full flex flex-col md:flex-row items-center md:items-end justify-between gap-6 md:gap-0 animate-fade-in text-center md:text-left mt-8 md:mt-0" style={{ animationDelay: "1.2s" }}>
-
           <div className="max-w-[340px]">
             <p className="font-sans text-brand-cream/60 text-[10px] uppercase tracking-[0.2em] leading-relaxed mx-auto md:mx-0">
               Every wedding you outsource to us is a weekend back with your family — or another $3K booking on your calendar.
             </p>
           </div>
-
-          <div className="flex flex-row items-center justify-center gap-4 w-full md:w-auto">
-            <a href="#contact" className="btn-primary py-3 px-6 md:px-8 text-[11px] whitespace-nowrap">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 w-full md:w-auto">
+            <a href="#contact" className="btn-primary py-3 px-6 md:px-8 text-[11px] w-full sm:w-auto justify-center">
               Get Your Free Test Edit
             </a>
-            <a href="#portfolio" className="btn-outline-light py-3 px-6 md:px-8 text-[11px] whitespace-nowrap">
+            <a href="#portfolio" className="btn-outline-light py-3 px-6 md:px-8 text-[11px] w-full sm:w-auto justify-center">
               See Our Work
             </a>
           </div>
