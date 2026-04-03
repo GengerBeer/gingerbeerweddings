@@ -120,7 +120,7 @@ export default function Footer() {
 
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pt-8">
           <p className="font-sans text-[11px] text-brand-cream/20 uppercase tracking-widest">
-            © {new Date().getFullYear()} Ginger Beer Films. All rights reserved.
+            © {new Date().getFullYear()} Ginger Beer Weddings. Alatyr Systems LLC. All rights reserved.
           </p>
           <div className="flex flex-wrap gap-4 md:gap-8 font-sans text-[11px] text-brand-cream/20 uppercase tracking-widest">
             <a href="/terms" className="hover:text-brand-cream transition-colors duration-200">
@@ -129,6 +129,7 @@ export default function Footer() {
             <span>European Union • Remote Worldwide</span>
           </div>
         </div>
+
       </div>
     </footer>
   );

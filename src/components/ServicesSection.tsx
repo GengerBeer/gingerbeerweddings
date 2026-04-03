@@ -1,8 +1,10 @@
 import { useEffect, useRef } from "react";
+import { Clapperboard, SlidersHorizontal, Zap, Wand2 } from "lucide-react";
 
 const services = [
   {
     number: "01",
+    icon: Clapperboard,
     title: "Wedding Film\nEditing",
     items: [
       { name: "Teaser", desc: "60–90 seconds of the good stuff. The one your couple posts before the bouquet hits the floor. Horizontal, vertical, or both." },
@@ -12,6 +14,7 @@ const services = [
   },
   {
     number: "02",
+    icon: SlidersHorizontal,
     title: "Photo\nRetouching",
     items: [
       { name: "Skin Retouching", desc: "Clean, natural, zero plastic. We enhance — we don't rebuild." },
@@ -22,6 +25,7 @@ const services = [
   },
   {
     number: "03",
+    icon: Zap,
     title: "Next-Day &\nSame-Day",
     items: [
       { name: "Next-Day Teaser", desc: "Teaser delivered in 24 hours. Your couple posts while the party's still trending." },
@@ -30,6 +34,7 @@ const services = [
   },
   {
     number: "04",
+    icon: Wand2,
     title: "Cleanup &\nRestoration",
     items: [
       { name: "Object Removal", desc: "Uncle Steve walking through the first kiss? Gone. Wires, exit signs, that one guy in cargo shorts? All gone." },
@@ -58,9 +63,20 @@ export default function ServicesSection() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-3 mt-6 md:mt-8">
           {services.map((svc, i) => (
             <div key={svc.number} className={`service-card p-6 md:p-8 reveal ${i === 1 ? "reveal-delay-2" : ""}`}>
-              <div className="relative mb-6">
-                <div className="font-serif text-[80px] md:text-[110px] font-extrabold opacity-20 leading-none select-none" style={{ color: "hsl(188 35% 20%)" }} aria-hidden="true">{svc.number}</div>
-                <h3 className="font-serif text-display-sm text-brand-cream font-extrabold -mt-6 md:-mt-8 relative z-10 whitespace-pre-line">{svc.title}</h3>
+              <div className="relative mb-6 pt-10 md:pt-14">
+                {/* Number: absolutely at top, bottom half hidden behind title */}
+                <div
+                  className="absolute top-0 left-0 font-serif font-extrabold leading-none select-none pointer-events-none z-0"
+                  style={{ color: "hsl(188 35% 20%)", opacity: 0.2, fontSize: "clamp(80px, 10vw, 110px)" }}
+                  aria-hidden="true"
+                >
+                  {svc.number}
+                </div>
+                {/* Title row: in front, positioned so top half of number peeks above */}
+                <div className="flex items-center justify-between relative z-10">
+                  <h3 className="font-serif text-display-sm text-brand-cream font-extrabold whitespace-pre-line">{svc.title}</h3>
+                  <svc.icon size={48} strokeWidth={1.5} className="text-brand-cream shrink-0" />
+                </div>
               </div>
               <div className="divider-dark mb-5" />
               <ul className="space-y-3">

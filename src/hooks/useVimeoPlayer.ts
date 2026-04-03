@@ -46,13 +46,15 @@ export interface UseVimeoPlayerResult {
   isReady: boolean;
   isPlaying: boolean;
   isBuffering: boolean;
-  progress: number;      // 0-100
+  progress: number;      // 0–100
+  currentTime: number;   // seconds
   duration: number;      // seconds
-  volume: number;        // 0-1
+  volume: number;        // 0–1
   qualities: VimeoQuality[];
   activeQuality: string;
   togglePlay: () => void;
-  seek: (ratio: number) => void;       // ratio 0-1
+  seek: (ratio: number) => void;       // ratio 0–1
+  seekSeconds: (delta: number) => void; // skip ±N seconds
   setVolume: (v: number) => void;
   setQuality: (id: string) => void;
 }
@@ -73,21 +75,23 @@ function loadVimeoSDK(): void {
 // ── Hook ─────────────────────────────────────────────────────────────────────
 export function useVimeoPlayer(
   iframeRef: React.RefObject<HTMLIFrameElement>,
-  options: { enabled: boolean }
+  options: { enabled: boolean; videoId?: string; onEndEarly?: () => void }
 ): UseVimeoPlayerResult {
-  const { enabled } = options;
+  const { enabled, videoId, onEndEarly } = options;
 
-  const playerRef   = useRef<VimeoPlayerInstance | null>(null);
+  const playerRef    = useRef<VimeoPlayerInstance | null>(null);
   const cancelledRef = useRef(false);
+  const durationRef  = useRef(0); // mirror for seekSeconds without stale closure
 
-  const [isReady,      setIsReady]      = useState(false);
-  const [isPlaying,    setIsPlaying]    = useState(false);
-  const [isBuffering,  setIsBuffering]  = useState(false);
-  const [progress,     setProgress]     = useState(0);
-  const [duration,     setDuration]     = useState(0);
-  const [volume,       setVolumeState]  = useState(1);
-  const [qualities,    setQualities]    = useState<VimeoQuality[]>([]);
-  const [activeQuality,setActiveQuality] = useState("auto");
+  const [isReady,       setIsReady]       = useState(false);
+  const [isPlaying,     setIsPlaying]     = useState(false);
+  const [isBuffering,   setIsBuffering]   = useState(false);
+  const [progress,      setProgress]      = useState(0);
+  const [currentTime,   setCurrentTime]   = useState(0);
+  const [duration,      setDuration]      = useState(0);
+  const [volume,        setVolumeState]   = useState(1);
+  const [qualities,     setQualities]     = useState<VimeoQuality[]>([]);
+  const [activeQuality, setActiveQuality] = useState("auto");
 
   // Load SDK as soon as hook is used
   useEffect(() => {
@@ -100,18 +104,21 @@ export function useVimeoPlayer(
 
     cancelledRef.current = false;
     playerRef.current    = null;
+    durationRef.current  = 0;
 
     // Reset state for the new video
     setIsReady(false);
     setIsPlaying(false);
-    setIsBuffering(false);
+    setIsBuffering(true);
     setProgress(0);
+    setCurrentTime(0);
     setDuration(0);
     setQualities([]);
     setActiveQuality("auto");
 
     let attempts = 0;
     const MAX_ATTEMPTS = 50; // 50 × 200ms = 10s max wait
+    let hasEndedEarly = false;
 
     const attach = () => {
       if (cancelledRef.current) return;
@@ -130,13 +137,31 @@ export function useVimeoPlayer(
 
       player.on("play",        () => { if (!cancelledRef.current) { setIsPlaying(true);  setIsBuffering(false); } });
       player.on("pause",       () => { if (!cancelledRef.current)   setIsPlaying(false); });
-      player.on("ended",       () => { if (!cancelledRef.current) { setIsPlaying(false); setProgress(0); } });
-      player.on("timeupdate",  (d: { percent: number }) => { if (!cancelledRef.current) setProgress(d.percent * 100); });
+      player.on("ended",       () => { if (!cancelledRef.current) { setIsPlaying(false); setProgress(0); setCurrentTime(0); } });
+      player.on("timeupdate",  (d: { seconds: number; percent: number }) => {
+        if (!cancelledRef.current) {
+          setCurrentTime(d.seconds);
+          setProgress(d.percent * 100);
+
+          if (onEndEarly && durationRef.current > 0 && !hasEndedEarly) {
+            // Trigger 1.5 seconds before Vimeo's end screen shows up
+            if (durationRef.current - d.seconds <= 1.5) {
+              hasEndedEarly = true;
+              onEndEarly();
+            }
+          }
+        }
+      });
       player.on("bufferstart", () => { if (!cancelledRef.current) setIsBuffering(true);  });
       player.on("bufferend",   () => { if (!cancelledRef.current) setIsBuffering(false); });
 
       player.getDuration()
-        .then((d) => { if (!cancelledRef.current) setDuration(d); })
+        .then((d) => {
+          if (!cancelledRef.current) {
+            setDuration(d);
+            durationRef.current = d;
+          }
+        })
         .catch(() => {});
 
       player.getQualities()
@@ -155,7 +180,7 @@ export function useVimeoPlayer(
       playerRef.current = null;
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [enabled, iframeRef]);
+  }, [enabled, iframeRef, videoId]);
 
   // ── Controls ───────────────────────────────────────────────────────────────
   const togglePlay = useCallback(() => {
@@ -166,10 +191,23 @@ export function useVimeoPlayer(
 
   const seek = useCallback((ratio: number) => {
     const p = playerRef.current;
-    if (!p || !duration) return;
-    p.setCurrentTime(ratio * duration).catch(() => {});
+    if (!p || !durationRef.current) return;
+    const t = ratio * durationRef.current;
+    p.setCurrentTime(t).catch(() => {});
     setProgress(ratio * 100);
-  }, [duration]);
+    setCurrentTime(t);
+  }, []);
+
+  const seekSeconds = useCallback((delta: number) => {
+    const p = playerRef.current;
+    if (!p || !durationRef.current) return;
+    setCurrentTime((prev) => {
+      const next = Math.max(0, Math.min(durationRef.current, prev + delta));
+      p.setCurrentTime(next).catch(() => {});
+      setProgress((next / durationRef.current) * 100);
+      return next;
+    });
+  }, []);
 
   const setVolume = useCallback((v: number) => {
     setVolumeState(v);
@@ -187,12 +225,14 @@ export function useVimeoPlayer(
     isPlaying,
     isBuffering,
     progress,
+    currentTime,
     duration,
     volume,
     qualities,
     activeQuality,
     togglePlay,
     seek,
+    seekSeconds,
     setVolume,
     setQuality,
   };

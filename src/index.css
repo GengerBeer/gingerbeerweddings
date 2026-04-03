@@ -574,4 +574,43 @@
   input[type="date"]::-webkit-datetime-edit-fields-wrapper {
     color: #0B2C31;
   }
+
+  /* ── Video Player ── */
+
+  /* Click feedback animation (play/pause/skip overlay) */
+  @keyframes video-click-pop {
+    0%   { opacity: 0; transform: scale(0.6); }
+    20%  { opacity: 1; transform: scale(1.1); }
+    60%  { opacity: 1; transform: scale(1);   }
+    100% { opacity: 0; transform: scale(1.15);}
+  }
+
+  .video-click-anim {
+    animation: video-click-pop 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    pointer-events: none;
+  }
+
+  /* Buffering spinner */
+  @keyframes player-spin {
+    to { transform: rotate(360deg); }
+  }
+
+  .player-spinner {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2.5px solid rgba(255, 255, 255, 0.15);
+    border-top-color: rgba(255, 255, 255, 0.9);
+    animation: player-spin 0.75s linear infinite;
+  }
+
+  /* Progress bar — smooth scale on hover via group */
+  #player-progress-bar:hover .progress-track {
+    height: 5px;
+  }
+
+  /* Volume slider styling */
+  input[type="range"].accent-white {
+    accent-color: white;
+  }
 }
