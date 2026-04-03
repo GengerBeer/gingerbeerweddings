@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import VideoModal from "@/components/VideoModal";
 
-const vimeoIds = ["1172328822", "1172320048", "1172316545", "1172303225"];
+const vimeoIds = ["1172303225", "1172320048", "1172316545", "1172328822"];
 
 interface VimeoMeta {
   title: string;

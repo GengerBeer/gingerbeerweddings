@@ -5,8 +5,8 @@ import portfolio2 from "@/assets/portfolio-2.jpg";
 import VideoModal from "@/components/VideoModal";
 
 const heroVideos = [
-  { title: "The Ceremony", videoUrl: "/video/4.mov" },
-  { title: "Emma & James", videoUrl: "/video/Rider.mp4" },
+  { vimeoId: "1172328822", title: "Sophie & Sean — Teaser" },
+  { vimeoId: "1172303225", title: "Dewi & Melvin" },
 ];
 
 export default function HeroSection() {

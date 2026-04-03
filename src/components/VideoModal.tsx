@@ -396,9 +396,11 @@ export default function VideoModal({ videos, startIndex, onClose }: Props) {
             <iframe
               ref={iframeRef}
               key={`vimeo-${video.vimeoId}-${index}`}
-              src={`https://player.vimeo.com/video/${video.vimeoId}?autoplay=1&badge=0&autopause=0&app_id=58479&title=0&byline=0&portrait=0&controls=0`}
+              src={`https://player.vimeo.com/video/${video.vimeoId}?autoplay=1&muted=0&badge=0&autopause=0&app_id=58479&title=0&byline=0&portrait=0&controls=${isMobile ? 1 : 0}&playsinline=1&dnt=1`}
               allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media"
               allowFullScreen
+              // @ts-ignore
+              webkit-playsinline="1"
               className="absolute inset-0 w-full h-full border-0"
             />
           )}
@@ -435,6 +437,7 @@ export default function VideoModal({ videos, startIndex, onClose }: Props) {
           )}
 
           {/* Transparent interceptor for click/dblclick */}
+          {!(isMobile && isVimeo) && (
           <div
             className="absolute inset-0 z-10"
             onClick={isMobile ? handleVideoTap : doTogglePlay}
@@ -444,14 +447,15 @@ export default function VideoModal({ videos, startIndex, onClose }: Props) {
               if (e.changedTouches.length === 1) e.preventDefault();
             }}
           />
+          )}
 
           {/* ── Controls overlay ── */}
           <div
             className="absolute inset-x-0 bottom-0 z-20 px-3 md:px-4 pb-3 md:pb-4 pt-12 md:pt-16 flex flex-col gap-2 md:gap-3 transition-opacity duration-300"
             style={{
               background: "linear-gradient(transparent, rgba(0,0,0,0.85))",
-              opacity: showControls ? 1 : 0,
-              pointerEvents: showControls ? "auto" : "none",
+              opacity: (isMobile && isVimeo) ? 0 : (showControls ? 1 : 0),
+              pointerEvents: (isMobile && isVimeo) ? "none" : (showControls ? "auto" : "none"),
             }}
             onMouseMove={(e) => e.stopPropagation()}
           >
