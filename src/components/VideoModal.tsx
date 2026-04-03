@@ -25,6 +25,27 @@ const fmt = (s: number) => {
   return `${m}:${sec.toString().padStart(2, "0")}`;
 };
 
+const PLAYER_VOLUME_STORAGE_KEY = "gbw-player-volume";
+const PLAYER_MUTED_STORAGE_KEY = "gbw-player-muted";
+const DEFAULT_PLAYER_VOLUME = 0.35;
+
+function readInitialPlayerState() {
+  if (typeof window === "undefined") {
+    return { volume: DEFAULT_PLAYER_VOLUME, muted: false };
+  }
+
+  const storedVolumeRaw = window.localStorage.getItem(PLAYER_VOLUME_STORAGE_KEY);
+  const storedVolume = storedVolumeRaw === null ? NaN : Number(storedVolumeRaw);
+  const volume = Number.isFinite(storedVolume)
+    ? Math.max(0, Math.min(1, storedVolume))
+    : DEFAULT_PLAYER_VOLUME;
+
+  return {
+    volume,
+    muted: window.localStorage.getItem(PLAYER_MUTED_STORAGE_KEY) === "true",
+  };
+}
+
 // ── Icons ────────────────────────────────────────────────────────────────────
 const PlayIcon  = () => <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M4 2.5L13 8 4 13.5V2.5Z" fill="white"/></svg>;
 const PauseIcon = () => <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="3" y="2" width="4" height="12" rx="1" fill="white"/><rect x="9" y="2" width="4" height="12" rx="1" fill="white"/></svg>;
@@ -85,6 +106,7 @@ const Skip10FwdIcon = () => (
 
 // ── Component ────────────────────────────────────────────────────────────────
 export default function VideoModal({ videos, startIndex, onClose }: Props) {
+  const [initialPlayerState] = useState(readInitialPlayerState);
   const [index, setIndex] = useState(startIndex);
   const video   = videos[index];
   const hasPrev = index > 0;
@@ -99,13 +121,14 @@ export default function VideoModal({ videos, startIndex, onClose }: Props) {
   const seekingRef = useRef(false); // for drag-seek
   const mountedRef = useRef(false); // for open animation
 
-  const [isMuted,      setIsMuted]      = useState(false);
-  const [volume,       setVolumeUI]     = useState(1);
+  const [isMuted,      setIsMuted]      = useState(initialPlayerState.muted);
+  const [volume,       setVolumeUI]     = useState(initialPlayerState.volume);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showControls, setShowControls] = useState(true);
   const [showQuality,  setShowQuality]  = useState(false);
   const [clickAnim,    setClickAnim]    = useState<{ type: "play" | "pause" | "fwd" | "back"; key: number } | null>(null);
   const [isOpen,       setIsOpen]       = useState(false); // mount animation
+  const effectiveVolume = isMuted ? 0 : volume;
 
   // Mount animation
   useEffect(() => {
@@ -122,7 +145,12 @@ export default function VideoModal({ videos, startIndex, onClose }: Props) {
   }, [hasNext, onClose]);
 
   // ── Player hooks ────────────────────────────────────────────────────────────
-  const vimeo = useVimeoPlayer(iframeRef, { enabled: isVimeo, videoId: video.vimeoId, onEndEarly: handleEndEarly });
+  const vimeo = useVimeoPlayer(iframeRef, {
+    enabled: isVimeo,
+    videoId: video.vimeoId,
+    onEndEarly: handleEndEarly,
+    initialVolume: effectiveVolume,
+  });
   const html5 = useHtml5Player(videoRef,  { enabled: !isVimeo, videoUrl: video.videoUrl });
 
   const isPlaying   = isVimeo ? vimeo.isPlaying   : html5.isPlaying;
@@ -134,7 +162,9 @@ export default function VideoModal({ videos, startIndex, onClose }: Props) {
   const qualities   = isVimeo ? vimeo.qualities    : [];
   const activeQuality = isVimeo ? vimeo.activeQuality : "auto";
 
-  const effectiveVolume = isMuted ? 0 : volume;
+  useEffect(() => {
+    setShowQuality(false);
+  }, [index]);
 
   // Body scroll lock
   useEffect(() => {
@@ -142,6 +172,34 @@ export default function VideoModal({ videos, startIndex, onClose }: Props) {
     document.body.style.overflow = "hidden";
     return () => { document.body.style.overflow = prev; };
   }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    window.localStorage.setItem(PLAYER_VOLUME_STORAGE_KEY, String(volume));
+    window.localStorage.setItem(PLAYER_MUTED_STORAGE_KEY, String(isMuted));
+  }, [volume, isMuted]);
+
+  useEffect(() => {
+    const nextVolume = isMuted ? 0 : volume;
+
+    if (isVimeo) {
+      if (!vimeo.isReady) return;
+      vimeo.setVolume(nextVolume);
+      return;
+    }
+
+    html5.setVolume(nextVolume);
+  }, [
+    html5.setVolume,
+    isMuted,
+    isVimeo,
+    video.videoUrl,
+    video.vimeoId,
+    vimeo.isReady,
+    vimeo.setVolume,
+    volume,
+  ]);
 
   // ── Controls auto-hide ───────────────────────────────────────────────────────
   const clearIdle = useCallback(() => {

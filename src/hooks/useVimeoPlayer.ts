@@ -31,8 +31,10 @@ interface VimeoPlayerInstance {
   setCurrentTime(seconds: number): Promise<void>;
   setVolume(volume: number): Promise<void>;
   setQuality(quality: string): Promise<void>;
+  getVolume(): Promise<number>;
   getDuration(): Promise<number>;
   getQualities(): Promise<{ id: string; label: string; active: boolean }[]>;
+  getQuality(): Promise<string>;
   destroy(): Promise<void>;
 }
 
@@ -61,6 +63,20 @@ export interface UseVimeoPlayerResult {
 
 // ── Load SDK once, globally ──────────────────────────────────────────────────
 let sdkLoadStarted = false;
+const EARLY_ADVANCE_THRESHOLD_SECONDS = 0.25;
+
+function normalizeQualities(list: VimeoQuality[]): VimeoQuality[] {
+  const seen = new Set<string>();
+
+  return list.filter((quality) => {
+    const id = quality.id.trim().toLowerCase();
+
+    if (!id || id === "auto" || seen.has(id)) return false;
+
+    seen.add(id);
+    return true;
+  });
+}
 
 function loadVimeoSDK(): void {
   if (sdkLoadStarted || window.Vimeo) return;
@@ -75,9 +91,9 @@ function loadVimeoSDK(): void {
 // ── Hook ─────────────────────────────────────────────────────────────────────
 export function useVimeoPlayer(
   iframeRef: React.RefObject<HTMLIFrameElement>,
-  options: { enabled: boolean; videoId?: string; onEndEarly?: () => void }
+  options: { enabled: boolean; videoId?: string; onEndEarly?: () => void; initialVolume?: number }
 ): UseVimeoPlayerResult {
-  const { enabled, videoId, onEndEarly } = options;
+  const { enabled, videoId, onEndEarly, initialVolume } = options;
 
   const playerRef    = useRef<VimeoPlayerInstance | null>(null);
   const cancelledRef = useRef(false);
@@ -133,23 +149,52 @@ export function useVimeoPlayer(
       }
 
       const player = new window.Vimeo.Player(iframeRef.current);
+      const startingVolume = typeof initialVolume === "number"
+        ? Math.max(0, Math.min(1, initialVolume))
+        : null;
+
       playerRef.current = player;
+
+      if (startingVolume !== null) {
+        setVolumeState(startingVolume);
+        player.setVolume(startingVolume).catch(() => {});
+      }
 
       player.on("play",        () => { if (!cancelledRef.current) { setIsPlaying(true);  setIsBuffering(false); } });
       player.on("pause",       () => { if (!cancelledRef.current)   setIsPlaying(false); });
-      player.on("ended",       () => { if (!cancelledRef.current) { setIsPlaying(false); setProgress(0); setCurrentTime(0); } });
+      player.on("ended",       () => {
+        if (!cancelledRef.current) {
+          setIsPlaying(false);
+          setProgress(0);
+          setCurrentTime(0);
+
+          if (onEndEarly && !hasEndedEarly) {
+            hasEndedEarly = true;
+            onEndEarly();
+          }
+        }
+      });
       player.on("timeupdate",  (d: { seconds: number; percent: number }) => {
         if (!cancelledRef.current) {
           setCurrentTime(d.seconds);
           setProgress(d.percent * 100);
 
           if (onEndEarly && durationRef.current > 0 && !hasEndedEarly) {
-            // Trigger 1.5 seconds before Vimeo's end screen shows up
-            if (durationRef.current - d.seconds <= 1.5) {
+            if (durationRef.current - d.seconds <= EARLY_ADVANCE_THRESHOLD_SECONDS) {
               hasEndedEarly = true;
               onEndEarly();
             }
           }
+        }
+      });
+      player.on("volumechange", (d: { volume?: number }) => {
+        if (!cancelledRef.current && typeof d?.volume === "number") {
+          setVolumeState(d.volume);
+        }
+      });
+      player.on("qualitychange", (d: { quality?: string }) => {
+        if (!cancelledRef.current && d?.quality) {
+          setActiveQuality(d.quality);
         }
       });
       player.on("bufferstart", () => { if (!cancelledRef.current) setIsBuffering(true);  });
@@ -164,15 +209,37 @@ export function useVimeoPlayer(
         })
         .catch(() => {});
 
+      player.getVolume()
+        .then((v) => {
+          if (!cancelledRef.current && typeof v === "number") {
+            setVolumeState(v);
+          }
+        })
+        .catch(() => {});
+
       player.getQualities()
-        .then((q) => { if (!cancelledRef.current && q?.length) setQualities(q); })
+        .then((q) => {
+          if (!cancelledRef.current && q?.length) {
+            setQualities(normalizeQualities(q));
+          }
+        })
+        .catch(() => {});
+
+      player.getQuality()
+        .then((quality) => {
+          if (!cancelledRef.current && quality) {
+            setActiveQuality(quality);
+          }
+        })
         .catch(() => {});
 
       setIsReady(true);
     };
 
     // Small delay to ensure the iframe is fully mounted in the DOM
-    setTimeout(attach, 150);
+    // iOS Safari needs a longer delay for the SDK to establish postMessage channel
+    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+    setTimeout(attach, isSafari ? 800 : 150);
 
     return () => {
       cancelledRef.current = true;
