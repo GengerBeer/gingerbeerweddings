@@ -231,7 +231,11 @@ const FeedbackDialog = () => {
               <a href="/terms" className="underline text-foreground hover:text-accent transition-colors">
                 Terms & Conditions
               </a>{" "}
-              and consent to being contacted by Ginger Beer Weddings.
+              and{" "}
+              <a href="/privacy" className="underline text-foreground hover:text-accent transition-colors">
+                Privacy Policy
+              </a>
+              , and consent to being contacted by Ginger Beer Weddings.
             </label>
           </div>
 

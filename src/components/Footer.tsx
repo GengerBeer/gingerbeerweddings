@@ -122,11 +122,20 @@ export default function Footer() {
           <p className="font-sans text-[11px] text-brand-cream/20 uppercase tracking-widest">
             © {new Date().getFullYear()} Ginger Beer Weddings. Alatyr Systems LLC. All rights reserved.
           </p>
-          <div className="flex flex-wrap gap-4 md:gap-8 font-sans text-[11px] text-brand-cream/20 uppercase tracking-widest">
-            <a href="/terms" className="hover:text-brand-cream transition-colors duration-200">
+          <div className="flex flex-wrap items-center gap-3 md:gap-4 font-sans text-[11px] text-brand-cream/20 uppercase tracking-widest">
+            <a
+              href="/terms"
+              className="rounded-full border border-white/10 px-3 py-1.5 hover:border-brand-cream/30 hover:text-brand-cream transition-colors duration-200"
+            >
               Terms & Conditions
             </a>
-            <span>European Union • Remote Worldwide</span>
+            <a
+              href="/privacy"
+              className="rounded-full border border-white/10 px-3 py-1.5 hover:border-brand-cream/30 hover:text-brand-cream transition-colors duration-200"
+            >
+              Privacy Policy
+            </a>
+            <span className="text-brand-cream/15">European Union • Remote Worldwide</span>
           </div>
         </div>
 
