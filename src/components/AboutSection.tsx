@@ -113,9 +113,6 @@ export default function AboutSection() {
 
           {/* ── Text column ── */}
           <div className="reveal-left">
-            <p className="text-label uppercase tracking-[0.25em] text-brand-sand/70 font-sans text-[10px] mb-4">
-              ABOUT
-            </p>
             <h2 className="font-serif text-display-lg text-brand-cream font-extrabold mb-10">
               Who We Are
             </h2>

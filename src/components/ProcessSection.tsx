@@ -23,7 +23,6 @@ export default function ProcessSection() {
     <section id="process" ref={sectionRef} className="section-dark py-28 md:py-40">
       <div className="max-w-7xl mx-auto px-6 md:px-12">
         <div className="mb-12 md:mb-16 reveal">
-          <p className="text-label uppercase tracking-[0.25em] text-brand-sand/60 font-sans text-[10px] mb-4">How It Works</p>
           <h2 className="font-serif text-display-lg text-brand-cream font-extrabold">Our Process</h2>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

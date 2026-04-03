@@ -87,9 +87,6 @@ export default function InvestmentSection() {
 
         {/* Header */}
         <div className="mb-16 md:mb-20 reveal">
-          <p className="text-label uppercase tracking-[0.25em] text-muted-foreground font-sans text-[10px] mb-4">
-            INVESTMENT
-          </p>
           <h2 className="font-serif text-display-lg text-foreground font-extrabold mb-4">
             Pricing
           </h2>

@@ -5,13 +5,21 @@ import portfolio2 from "@/assets/portfolio-2.jpg";
 import VideoModal from "@/components/VideoModal";
 
 const heroVideos = [
-  { vimeoId: "1172328822", title: "Sophie & Sean — Teaser" },
-  { vimeoId: "1172303225", title: "Dewi & Melvin" },
+  { vimeoId: "1172328822", title: "Sophie & Sean - Teaser", fallbackThumb: portfolio2 },
+  { vimeoId: "1172303225", title: "Dewi & Melvin", fallbackThumb: portfolio1 },
 ];
+
+interface HeroVideoMeta {
+  thumb: string;
+  title: string;
+}
+
+const HERO_HOVER_BUTTON_SIZE = 64;
 
 export default function HeroSection() {
   const sectionRef = useRef<HTMLElement>(null);
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
+  const [heroMetas, setHeroMetas] = useState<(HeroVideoMeta | null)[]>(heroVideos.map(() => null));
 
   const leftBtnRef = useRef<HTMLDivElement>(null);
   const rightBtnRef = useRef<HTMLDivElement>(null);
@@ -42,6 +50,26 @@ export default function HeroSection() {
   };
 
   const openVideo = (idx: number) => setActiveIndex(idx);
+
+  useEffect(() => {
+    heroVideos.forEach((video, i) => {
+      fetch(`https://vimeo.com/api/oembed.json?url=https://vimeo.com/${video.vimeoId}&width=1280`)
+        .then((r) => r.json())
+        .then((data) => {
+          if (data?.thumbnail_url) {
+            setHeroMetas((prev) => {
+              const next = [...prev];
+              next[i] = {
+                thumb: data.thumbnail_url,
+                title: data.title ?? video.title,
+              };
+              return next;
+            });
+          }
+        })
+        .catch(() => {});
+    });
+  }, []);
 
   // Parallax on scroll
   useEffect(() => {
@@ -111,11 +139,11 @@ export default function HeroSection() {
             onMouseLeave={() => handleCardLeave("left")}
             onMouseMove={(e) => handleCardMove(e, "left")}
           >
-            <img ref={leftImgRef} src={portfolio2} alt="" className="w-full h-full object-cover"
+            <img ref={leftImgRef} src={heroMetas[0]?.thumb ?? heroVideos[0].fallbackThumb} alt={heroMetas[0]?.title ?? heroVideos[0].title} className="w-full h-full object-cover"
               style={{ backfaceVisibility: "hidden", transform: "translateZ(0)", transition: "filter 0.5s ease, scale 0.5s ease", filter: "grayscale(100%) contrast(110%)", scale: "1" }}
             />
             <div ref={leftBtnRef} className="absolute pointer-events-none rounded-full"
-              style={{ width: 64, height: 64, left: 0, top: 0, transform: "translate(-50%, -50%)", opacity: 0, transition: "opacity 0.25s ease", background: "linear-gradient(145deg, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.04) 100%)", backdropFilter: "blur(20px) saturate(180%)", WebkitBackdropFilter: "blur(20px) saturate(180%)", border: "1px solid rgba(255,255,255,0.4)", boxShadow: "0 2px 16px rgba(0,0,0,0.2), inset 0 1.5px 0 rgba(255,255,255,0.55), inset 0 -1px 0 rgba(255,255,255,0.08)" }}
+              style={{ width: HERO_HOVER_BUTTON_SIZE, height: HERO_HOVER_BUTTON_SIZE, left: 0, top: 0, transform: "translate(-50%, -50%)", opacity: 0, transition: "opacity 0.25s ease", background: "linear-gradient(145deg, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.04) 100%)", backdropFilter: "blur(20px) saturate(180%)", WebkitBackdropFilter: "blur(20px) saturate(180%)", border: "1px solid rgba(255,255,255,0.4)", boxShadow: "0 2px 16px rgba(0,0,0,0.2), inset 0 1.5px 0 rgba(255,255,255,0.55), inset 0 -1px 0 rgba(255,255,255,0.08)" }}
             >
               <div className="absolute inset-0 rounded-full" style={{ background: "linear-gradient(155deg, rgba(255,255,255,0.3) 0%, transparent 40%)" }} />
               <div className="w-full h-full flex items-center justify-center">
@@ -133,11 +161,11 @@ export default function HeroSection() {
             onMouseLeave={() => handleCardLeave("right")}
             onMouseMove={(e) => handleCardMove(e, "right")}
           >
-            <img ref={rightImgRef} src={portfolio1} alt="" className="w-full h-full object-cover"
+            <img ref={rightImgRef} src={heroMetas[1]?.thumb ?? heroVideos[1].fallbackThumb} alt={heroMetas[1]?.title ?? heroVideos[1].title} className="w-full h-full object-cover"
               style={{ backfaceVisibility: "hidden", transform: "translateZ(0)", transition: "filter 0.5s ease, scale 0.5s ease", filter: "grayscale(10%)", scale: "1" }}
             />
             <div ref={rightBtnRef} className="absolute pointer-events-none rounded-full"
-              style={{ width: 80, height: 80, left: 0, top: 0, transform: "translate(-50%, -50%)", opacity: 0, transition: "opacity 0.25s ease", background: "linear-gradient(145deg, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.04) 100%)", backdropFilter: "blur(20px) saturate(180%)", WebkitBackdropFilter: "blur(20px) saturate(180%)", border: "1px solid rgba(255,255,255,0.4)", boxShadow: "0 2px 16px rgba(0,0,0,0.2), inset 0 1.5px 0 rgba(255,255,255,0.55), inset 0 -1px 0 rgba(255,255,255,0.08)" }}
+              style={{ width: HERO_HOVER_BUTTON_SIZE, height: HERO_HOVER_BUTTON_SIZE, left: 0, top: 0, transform: "translate(-50%, -50%)", opacity: 0, transition: "opacity 0.25s ease", background: "linear-gradient(145deg, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.04) 100%)", backdropFilter: "blur(20px) saturate(180%)", WebkitBackdropFilter: "blur(20px) saturate(180%)", border: "1px solid rgba(255,255,255,0.4)", boxShadow: "0 2px 16px rgba(0,0,0,0.2), inset 0 1.5px 0 rgba(255,255,255,0.55), inset 0 -1px 0 rgba(255,255,255,0.08)" }}
             >
               <div className="absolute inset-0 rounded-full" style={{ background: "linear-gradient(155deg, rgba(255,255,255,0.3) 0%, transparent 40%)" }} />
               <div className="w-full h-full flex items-center justify-center">
@@ -171,7 +199,7 @@ export default function HeroSection() {
             {/* Mobile-only images */}
             <div className="md:hidden flex w-full max-w-sm mx-auto justify-between gap-4 mt-12 pointer-events-auto">
               <div className="relative w-1/2 aspect-[3/4] rounded-lg overflow-hidden shadow-xl -rotate-2 border border-brand-cream/10 cursor-pointer group" onClick={() => openVideo(0)}>
-                <img src={portfolio2} alt="" className="w-full h-full object-cover grayscale-[100%] transition-transform duration-700 group-hover:scale-105" />
+                <img src={heroMetas[0]?.thumb ?? heroVideos[0].fallbackThumb} alt={heroMetas[0]?.title ?? heroVideos[0].title} className="w-full h-full object-cover grayscale-[100%] transition-transform duration-700 group-hover:scale-105" />
                 <div className="absolute inset-0 bg-brand-dark/20 transition-opacity duration-300 group-hover:opacity-0" />
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 w-16 h-16 rounded-full flex items-center justify-center transition-all duration-300 group-hover:scale-110"
                   style={{ background: "linear-gradient(145deg, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.06) 100%)", backdropFilter: "blur(20px) saturate(180%)", WebkitBackdropFilter: "blur(20px) saturate(180%)", border: "1px solid rgba(255,255,255,0.35)", boxShadow: "0 2px 16px rgba(0,0,0,0.25), inset 0 1.5px 0 rgba(255,255,255,0.5), inset 0 -1px 0 rgba(255,255,255,0.08)" }}
@@ -181,7 +209,7 @@ export default function HeroSection() {
                 </div>
               </div>
               <div className="relative w-1/2 aspect-[4/3] rounded-lg overflow-hidden shadow-xl rotate-3 mt-8 border border-brand-cream/10 cursor-pointer group" onClick={() => openVideo(1)}>
-                <img src={portfolio1} alt="" className="w-full h-full object-cover grayscale-[10%] transition-transform duration-700 group-hover:scale-105" />
+                <img src={heroMetas[1]?.thumb ?? heroVideos[1].fallbackThumb} alt={heroMetas[1]?.title ?? heroVideos[1].title} className="w-full h-full object-cover grayscale-[10%] transition-transform duration-700 group-hover:scale-105" />
                 <div className="absolute inset-0 bg-brand-dark/20 transition-opacity duration-300 group-hover:opacity-0" />
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 w-16 h-16 rounded-full flex items-center justify-center transition-all duration-300 group-hover:scale-110"
                   style={{ background: "linear-gradient(145deg, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.06) 100%)", backdropFilter: "blur(20px) saturate(180%)", WebkitBackdropFilter: "blur(20px) saturate(180%)", border: "1px solid rgba(255,255,255,0.35)", boxShadow: "0 2px 16px rgba(0,0,0,0.25), inset 0 1.5px 0 rgba(255,255,255,0.5), inset 0 -1px 0 rgba(255,255,255,0.08)" }}

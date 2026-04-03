@@ -70,7 +70,6 @@ export default function ContactSection() {
         <div className="absolute -left-40 top-1/2 -translate-y-1/2 w-96 h-96 rounded-full pointer-events-none" style={{ background: "radial-gradient(circle, hsl(188 41% 25% / 0.5) 0%, transparent 70%)", filter: "blur(60px)" }} aria-hidden="true" />
         <div className="grid grid-cols-1 md:grid-cols-2 gap-16 md:gap-24 relative items-start">
           <div className="reveal">
-            <p className="text-label uppercase tracking-[0.25em] text-brand-sand/60 font-sans text-[10px] mb-4">Contact</p>
             <h2 className="font-serif text-display-md text-brand-cream font-extrabold mb-12 md:mb-16 leading-tight">Let's Make Something<br /><em className="italic">Sparkling.</em></h2>
             <p className="font-sans text-brand-cream/55 text-sm leading-relaxed mb-12 max-w-sm">Got footage? Got a deadline? Want to see what we can do with your material before committing? Tell us. We’ll be back within 24 hours.</p>
             <div className="space-y-0">

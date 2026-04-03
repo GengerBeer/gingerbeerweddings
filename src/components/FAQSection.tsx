@@ -28,7 +28,6 @@ export default function FAQSection() {
     <section id="faq" className="section-cream py-28 md:py-40">
       <div className="max-w-5xl mx-auto px-6 md:px-12">
         <div className="mb-12 md:mb-16">
-          <p className="text-label uppercase tracking-[0.2em] text-muted-foreground font-sans text-[10px] mb-4">FAQ</p>
           <h2 className="font-serif text-display-lg text-foreground font-extrabold">Common Questions</h2>
         </div>
         <div className="space-y-0">

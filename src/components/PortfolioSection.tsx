@@ -1,7 +1,12 @@
 import { useEffect, useState } from "react";
 import VideoModal from "@/components/VideoModal";
 
-const vimeoIds = ["1172303225", "1172320048", "1172316545", "1172328822"];
+const portfolioVideos = [
+  { vimeoId: "1172303225", fallbackTitle: "Dewi & Melvin" },
+  { vimeoId: "1172320048", fallbackTitle: "Portfolio Video 2" },
+  { vimeoId: "1172316545", fallbackTitle: "Portfolio Video 3" },
+  { vimeoId: "1172328822", fallbackTitle: "Sophie & Sean - Teaser" },
+];
 
 interface VimeoMeta {
   title: string;
@@ -58,12 +63,12 @@ const VideoCard = ({ vimeoId, meta, onOpen }: {
 /* ── Section ────────────────────────────────────────────────────── */
 export default function PortfolioSection() {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
-  const [metas, setMetas] = useState<(VimeoMeta | null)[]>(vimeoIds.map(() => null));
+  const [metas, setMetas] = useState<(VimeoMeta | null)[]>(portfolioVideos.map(() => null));
 
   // Fetch title + thumbnail from Vimeo oEmbed (no auth required)
   useEffect(() => {
-    vimeoIds.forEach((id, i) => {
-      fetch(`https://vimeo.com/api/oembed.json?url=https://vimeo.com/${id}&width=1280`)
+    portfolioVideos.forEach((video, i) => {
+      fetch(`https://vimeo.com/api/oembed.json?url=https://vimeo.com/${video.vimeoId}&width=1280`)
         .then((r) => r.json())
         .then((data) => {
           if (data?.title) {
@@ -82,9 +87,9 @@ export default function PortfolioSection() {
   }, []);
 
   // Build VideoItem array for VideoModal (uses vimeoId field)
-  const modalVideos = vimeoIds.map((vimeoId, i) => ({
-    vimeoId,
-    title: metas[i]?.title ?? vimeoId,
+  const modalVideos = portfolioVideos.map((video, i) => ({
+    vimeoId: video.vimeoId,
+    title: metas[i]?.title ?? video.fallbackTitle,
   }));
 
   return (
@@ -108,19 +113,19 @@ export default function PortfolioSection() {
         >
           {/* Card 1 — left col, rows 1-2 */}
           <div style={{ gridColumn: 1, gridRow: "1 / span 2" }}>
-            <VideoCard vimeoId={vimeoIds[0]} meta={metas[0]} onOpen={() => setActiveIndex(0)} />
+            <VideoCard vimeoId={portfolioVideos[0].vimeoId} meta={metas[0]} onOpen={() => setActiveIndex(0)} />
           </div>
           {/* Card 2 — right col, row 1 */}
           <div style={{ gridColumn: 2, gridRow: 1 }}>
-            <VideoCard vimeoId={vimeoIds[1]} meta={metas[1]} onOpen={() => setActiveIndex(1)} />
+            <VideoCard vimeoId={portfolioVideos[1].vimeoId} meta={metas[1]} onOpen={() => setActiveIndex(1)} />
           </div>
           {/* Card 3 — right col, row 2 */}
           <div style={{ gridColumn: 2, gridRow: 2 }}>
-            <VideoCard vimeoId={vimeoIds[2]} meta={metas[2]} onOpen={() => setActiveIndex(2)} />
+            <VideoCard vimeoId={portfolioVideos[2].vimeoId} meta={metas[2]} onOpen={() => setActiveIndex(2)} />
           </div>
           {/* Card 4 — full width */}
           <div style={{ gridColumn: "1 / span 2", gridRow: 3 }}>
-            <VideoCard vimeoId={vimeoIds[3]} meta={metas[3]} onOpen={() => setActiveIndex(3)} />
+            <VideoCard vimeoId={portfolioVideos[3].vimeoId} meta={metas[3]} onOpen={() => setActiveIndex(3)} />
           </div>
         </div>
       </div>

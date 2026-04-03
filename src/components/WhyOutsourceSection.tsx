@@ -54,9 +54,6 @@ export default function WhyOutsourceSection() {
     <section id="why-outsource" ref={sectionRef} className="section-cream py-28 md:py-40">
       <div className="max-w-7xl mx-auto px-6 md:px-12">
         <div className="mb-16 md:mb-24 reveal text-center md:text-left">
-          <p className="text-label uppercase tracking-[0.25em] text-brand-teal/70 font-sans text-[10px] mb-4">
-            WHY GBW
-          </p>
           <h2 className="font-serif text-display-lg text-brand-dark font-extrabold">
             Why Outsource to Us
           </h2>
