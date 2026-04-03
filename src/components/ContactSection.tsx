@@ -79,6 +79,8 @@ export default function ContactSection() {
               <div className="divider-dark" />
               <div className="flex justify-between items-center py-4"><span className="font-sans text-[11px] uppercase tracking-widest text-brand-cream/40">Based In</span><span className="font-sans text-sm text-brand-cream">European Union • Remote Worldwide</span></div>
               <div className="divider-dark" />
+              <div className="flex justify-between items-center py-4"><span className="font-sans text-[11px] uppercase tracking-widest text-brand-cream/40">Legal Entity</span><span className="font-sans text-sm text-brand-cream">Alatyr Systems LLC</span></div>
+              <div className="divider-dark" />
             </div>
           </div>
           <div className="reveal reveal-delay-2" style={{ paddingTop: '3.5rem' }}>

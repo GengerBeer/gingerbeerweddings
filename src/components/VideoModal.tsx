@@ -1,9 +1,7 @@
-import { useState, useEffect, useRef } from "react";
-
-declare global {
-  interface Window { Vimeo: any; }
-}
-type VimeoPlayer = any;
+import { useState, useEffect, useRef, useCallback } from "react";
+import { useVimeoPlayer } from "@/hooks/useVimeoPlayer";
+import { useHtml5Player } from "@/hooks/useHtml5Player";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export interface VideoItem {
   /** Vimeo video ID (takes priority if provided) */
@@ -20,171 +18,336 @@ interface Props {
   onClose: () => void;
 }
 
+const fmt = (s: number) => {
+  if (!s || isNaN(s) || !isFinite(s)) return "0:00";
+  const m = Math.floor(s / 60);
+  const sec = Math.floor(s % 60);
+  return `${m}:${sec.toString().padStart(2, "0")}`;
+};
+
+// ── Icons ────────────────────────────────────────────────────────────────────
+const PlayIcon  = () => <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M4 2.5L13 8 4 13.5V2.5Z" fill="white"/></svg>;
+const PauseIcon = () => <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="3" y="2" width="4" height="12" rx="1" fill="white"/><rect x="9" y="2" width="4" height="12" rx="1" fill="white"/></svg>;
+
+const VolumeIcon = ({ level }: { level: number }) => {
+  if (level === 0) return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+      <path d="M11 5L6 9H2v6h4l5 4V5z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M17 9l-6 6M11 9l6 6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+    </svg>
+  );
+  if (level < 0.5) return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+      <path d="M11 5L6 9H2v6h4l5 4V5z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M15.54 8.46a5 5 0 0 1 0 7.07" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+    </svg>
+  );
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+      <path d="M11 5L6 9H2v6h4l5 4V5z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M15.54 8.46a5 5 0 0 1 0 7.07M19.07 4.93a10 10 0 0 1 0 14.14" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+    </svg>
+  );
+};
+
+const EnterFullscreenIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+    <path d="M3 9V3h6M21 9V3h-6M3 15v6h6M21 15v6h-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+
+const ExitFullscreenIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+    <path d="M9 3v6H3M15 3v6h6M9 21v-6H3M15 21v-6h6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+
+const PiPIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+    <rect x="2" y="4" width="20" height="16" rx="2" stroke="currentColor" strokeWidth="1.8"/>
+    <rect x="12" y="12" width="8" height="6" rx="1" fill="currentColor"/>
+  </svg>
+);
+
+const Skip10BackIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M11.99 5V1l-5 5 5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6h-2c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/>
+    <text x="12" y="15" textAnchor="middle" fontSize="5.5" fontWeight="700" fontFamily="system-ui,sans-serif" fill="currentColor">10</text>
+  </svg>
+);
+
+const Skip10FwdIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M12.01 5V1l5 5-5 5V7c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6h2c0 4.42-3.58 8-8 8s-8-3.58-8-8 3.58-8 8-8z"/>
+    <text x="12" y="15" textAnchor="middle" fontSize="5.5" fontWeight="700" fontFamily="system-ui,sans-serif" fill="currentColor">10</text>
+  </svg>
+);
+
+// ── Component ────────────────────────────────────────────────────────────────
 export default function VideoModal({ videos, startIndex, onClose }: Props) {
   const [index, setIndex] = useState(startIndex);
-  const video = videos[index];
+  const video   = videos[index];
   const hasPrev = index > 0;
   const hasNext = index < videos.length - 1;
   const isVimeo = !!video.vimeoId;
+  const isMobile = useIsMobile();
 
-  // Vimeo refs & state
   const iframeRef  = useRef<HTMLIFrameElement>(null);
   const videoRef   = useRef<HTMLVideoElement>(null);
-  const playerRef  = useRef<VimeoPlayer | null>(null);
   const cardRef    = useRef<HTMLDivElement>(null);
   const idleTimer  = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const seekingRef = useRef(false); // for drag-seek
+  const mountedRef = useRef(false); // for open animation
 
-  const [isPlaying,    setIsPlaying]    = useState(false);
-  const [progress,     setProgress]     = useState(0);
-  const [duration,     setDuration]     = useState(0);
-  const [volume,       setVolume]       = useState(1);
-  const [qualities,    setQualities]    = useState<{ id: string; label: string; active: boolean }[]>([]);
-  const [activeQuality,setActiveQuality] = useState("auto");
-  const [showQuality,  setShowQuality]  = useState(false);
-  const [isBuffering,  setIsBuffering]  = useState(false);
+  const [isMuted,      setIsMuted]      = useState(false);
+  const [volume,       setVolumeUI]     = useState(1);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showControls, setShowControls] = useState(true);
+  const [showQuality,  setShowQuality]  = useState(false);
+  const [clickAnim,    setClickAnim]    = useState<{ type: "play" | "pause" | "fwd" | "back"; key: number } | null>(null);
+  const [isOpen,       setIsOpen]       = useState(false); // mount animation
 
-  // ── Vimeo init ──────────────────────────────────────────────────────────
+  // Mount animation
   useEffect(() => {
-    if (!isVimeo) return;
-    setProgress(0); setIsPlaying(false);
-    let attempts = 0;
-    const init = () => {
-      if (!iframeRef.current || !window.Vimeo) { if (++attempts < 30) setTimeout(init, 300); return; }
-      const player = new window.Vimeo.Player(iframeRef.current);
-      playerRef.current = player;
-      player.on("play",        () => { setIsPlaying(true);  setIsBuffering(false); });
-      player.on("pause",       () => setIsPlaying(false));
-      player.on("ended",       () => { setIsPlaying(false); setProgress(0); });
-      player.on("timeupdate",  (d: { percent: number }) => setProgress(d.percent * 100));
-      player.on("bufferstart", () => setIsBuffering(true));
-      player.on("bufferend",   () => setIsBuffering(false));
-      player.getDuration().then((d: number) => setDuration(d));
-      player.getQualities().then((q: any) => {
-        if (q?.length) { setQualities(q); setActiveQuality("auto"); }
-      }).catch(() => {});
-    };
-    init();
-    return () => { playerRef.current?.pause().catch(() => {}); playerRef.current = null; };
-  }, [index, isVimeo]);
-
-  // ── HTML5 video sync ─────────────────────────────────────────────────────
-  useEffect(() => {
-    if (isVimeo) return;
-    const el = videoRef.current;
-    if (!el) return;
-    const onPlay     = () => setIsPlaying(true);
-    const onPause    = () => setIsPlaying(false);
-    const onEnded    = () => { setIsPlaying(false); setProgress(0); };
-    const onTime     = () => setProgress(el.duration ? (el.currentTime / el.duration) * 100 : 0);
-    const onMeta     = () => setDuration(el.duration);
-    el.addEventListener("play",       onPlay);
-    el.addEventListener("pause",      onPause);
-    el.addEventListener("ended",      onEnded);
-    el.addEventListener("timeupdate", onTime);
-    el.addEventListener("loadedmetadata", onMeta);
-    return () => {
-      el.removeEventListener("play",       onPlay);
-      el.removeEventListener("pause",      onPause);
-      el.removeEventListener("ended",      onEnded);
-      el.removeEventListener("timeupdate", onTime);
-      el.removeEventListener("loadedmetadata", onMeta);
-    };
-  }, [index, isVimeo]);
-
-  // ── Fullscreen ───────────────────────────────────────────────────────────
-  useEffect(() => {
-    const onChange = () => {
-      const fs = !!document.fullscreenElement;
-      setIsFullscreen(fs);
-      if (!fs) {
-        setShowControls(true);
-        if (idleTimer.current) clearTimeout(idleTimer.current);
-      } else {
-        setShowControls(true);
-        idleTimer.current = setTimeout(() => setShowControls(false), 2500);
-      }
-    };
-    document.addEventListener("fullscreenchange", onChange);
-    return () => document.removeEventListener("fullscreenchange", onChange);
+    const raf = requestAnimationFrame(() => { mountedRef.current = true; setIsOpen(true); });
+    return () => cancelAnimationFrame(raf);
   }, []);
 
-  // ── Keyboard ─────────────────────────────────────────────────────────────
+  const handleEndEarly = useCallback(() => {
+    if (hasNext) {
+      setIndex(i => i + 1);
+    } else {
+      onClose();
+    }
+  }, [hasNext, onClose]);
+
+  // ── Player hooks ────────────────────────────────────────────────────────────
+  const vimeo = useVimeoPlayer(iframeRef, { enabled: isVimeo, videoId: video.vimeoId, onEndEarly: handleEndEarly });
+  const html5 = useHtml5Player(videoRef,  { enabled: !isVimeo, videoUrl: video.videoUrl });
+
+  const isPlaying   = isVimeo ? vimeo.isPlaying   : html5.isPlaying;
+  const isBuffering = isVimeo ? vimeo.isBuffering  : html5.isBuffering;
+  const progress    = isVimeo ? vimeo.progress     : html5.progress;
+  const currentTime = isVimeo ? vimeo.currentTime  : html5.currentTime;
+  const duration    = isVimeo ? vimeo.duration     : html5.duration;
+  const buffered    = isVimeo ? 0                  : html5.buffered;
+  const qualities   = isVimeo ? vimeo.qualities    : [];
+  const activeQuality = isVimeo ? vimeo.activeQuality : "auto";
+
+  const effectiveVolume = isMuted ? 0 : volume;
+
+  // Body scroll lock
+  useEffect(() => {
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = prev; };
+  }, []);
+
+  // ── Controls auto-hide ───────────────────────────────────────────────────────
+  const clearIdle = useCallback(() => {
+    if (idleTimer.current) clearTimeout(idleTimer.current);
+  }, []);
+
+  const scheduleHide = useCallback(() => {
+    clearIdle();
+    idleTimer.current = setTimeout(() => setShowControls(false), 3000);
+  }, [clearIdle]);
+
+  const bumpControls = useCallback(() => {
+    setShowControls(true);
+    scheduleHide();
+  }, [scheduleHide]);
+
+  useEffect(() => {
+    if (!isPlaying) {
+      setShowControls(true);
+      clearIdle();
+    } else {
+      scheduleHide();
+    }
+    return clearIdle;
+  }, [isPlaying, scheduleHide, clearIdle]);
+
+  // ── Fullscreen ───────────────────────────────────────────────────────────────
+  useEffect(() => {
+    const onChange = () => setIsFullscreen(!!document.fullscreenElement);
+    document.addEventListener("fullscreenchange", onChange);
+    // Safari
+    document.addEventListener("webkitfullscreenchange", onChange);
+    return () => {
+      document.removeEventListener("fullscreenchange", onChange);
+      document.removeEventListener("webkitfullscreenchange", onChange);
+    };
+  }, []);
+
+  const goFullscreen = useCallback(() => {
+    if (document.fullscreenElement) {
+      document.exitFullscreen().catch(() => {});
+      return;
+    }
+    // iOS Safari: use native video fullscreen
+    if (!isVimeo && videoRef.current) {
+      const vid = videoRef.current as any;
+      if (vid.webkitEnterFullscreen) { vid.webkitEnterFullscreen(); return; }
+    }
+    cardRef.current?.requestFullscreen?.().catch(() => {});
+  }, [isVimeo]);
+
+  // ── Handlers ────────────────────────────────────────────────────────────────
+  const doTogglePlay = useCallback(() => {
+    const willPlay = !isPlaying;
+    if (isVimeo) vimeo.togglePlay();
+    else         html5.togglePlay();
+    setClickAnim({ type: willPlay ? "play" : "pause", key: Date.now() });
+  }, [isPlaying, isVimeo, vimeo, html5]);
+
+  const doSeek = useCallback((ratio: number) => {
+    if (isVimeo) vimeo.seek(ratio);
+    else         html5.seek(ratio);
+    if (isPlaying) bumpControls();
+  }, [isVimeo, vimeo, html5, isPlaying, bumpControls]);
+
+  const doSkip = useCallback((delta: number) => {
+    if (isVimeo) vimeo.seekSeconds(delta);
+    else         html5.seekSeconds(delta);
+    setClickAnim({ type: delta > 0 ? "fwd" : "back", key: Date.now() });
+    bumpControls();
+  }, [isVimeo, vimeo, html5, bumpControls]);
+
+  const doMuteToggle = useCallback(() => {
+    const willMute = !isMuted;
+    setIsMuted(willMute);
+    const vol = willMute ? 0 : (volume > 0 ? volume : 1);
+    if (!willMute) setVolumeUI(vol);
+    if (isVimeo) vimeo.setVolume(willMute ? 0 : vol);
+    else         html5.setVolume(willMute ? 0 : vol);
+  }, [isMuted, volume, isVimeo, vimeo, html5]);
+
+  const doVolume = useCallback((val: number) => {
+    setVolumeUI(val);
+    setIsMuted(val === 0);
+    if (isVimeo) vimeo.setVolume(val);
+    else         html5.setVolume(val);
+  }, [isVimeo, vimeo, html5]);
+
+  // ── Progress bar seek (click + drag + touch) ────────────────────────────────
+  const calcRatio = (clientX: number, el: HTMLElement) => {
+    const rect = el.getBoundingClientRect();
+    return Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+  };
+
+  const handleSeekMouseDown = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    seekingRef.current = true;
+    const ratio = calcRatio(e.clientX, e.currentTarget);
+    doSeek(ratio);
+
+    const onMove = (me: MouseEvent) => {
+      if (!seekingRef.current) return;
+      const bar = document.getElementById("player-progress-bar");
+      if (bar) doSeek(calcRatio(me.clientX, bar));
+    };
+    const onUp = () => {
+      seekingRef.current = false;
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("mouseup", onUp);
+    };
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mouseup", onUp);
+  }, [doSeek]);
+
+  const handleSeekTouch = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    const touch = e.touches[0] || e.changedTouches[0];
+    if (!touch) return;
+    doSeek(calcRatio(touch.clientX, e.currentTarget));
+  }, [doSeek]);
+
+  // ── Double-tap skip (mobile) ────────────────────────────────────────────────
+  const lastTapRef  = useRef(0);
+  const lastSideRef = useRef<"left" | "right" | null>(null);
+  const handleVideoTap = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const side = e.clientX - rect.left < rect.width / 2 ? "left" : "right";
+    const now = Date.now();
+
+    if (now - lastTapRef.current < 300 && lastSideRef.current === side) {
+      // Double tap — skip
+      doSkip(side === "right" ? 10 : -10);
+    } else {
+      doTogglePlay();
+    }
+    lastTapRef.current  = now;
+    lastSideRef.current = side;
+  }, [doTogglePlay, doSkip]);
+
+  // ── Keyboard ────────────────────────────────────────────────────────────────
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && !document.fullscreenElement) { onClose(); return; }
-      if (e.key === "ArrowRight" && hasNext && !document.fullscreenElement) { setIndex(i => i + 1); return; }
-      if (e.key === "ArrowLeft"  && hasPrev && !document.fullscreenElement) { setIndex(i => i - 1); return; }
-      if (e.key === " ") { e.preventDefault(); togglePlay(); }
+      const tag = (e.target as HTMLElement)?.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA") return;
+
+      switch (e.key) {
+        case "Escape":
+          if (!document.fullscreenElement) { onClose(); return; }
+          break;
+        case "ArrowRight":
+          if (!document.fullscreenElement && hasNext) { setIndex(i => i + 1); return; }
+          if (e.shiftKey) { doSkip(10); e.preventDefault(); }
+          break;
+        case "ArrowLeft":
+          if (!document.fullscreenElement && hasPrev) { setIndex(i => i - 1); return; }
+          if (e.shiftKey) { doSkip(-10); e.preventDefault(); }
+          break;
+        case " ":
+          e.preventDefault();
+          doTogglePlay();
+          break;
+        case "f": case "F":
+          goFullscreen();
+          break;
+        case "m": case "M":
+          doMuteToggle();
+          break;
+        default: break;
+      }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hasNext, hasPrev, onClose, isPlaying]);
+  }, [hasNext, hasPrev, onClose, isPlaying, isMuted, volume]);
 
-  // ── Handlers ─────────────────────────────────────────────────────────────
-  const togglePlay = () => {
-    if (isVimeo) {
-      if (!playerRef.current) return;
-      isPlaying ? playerRef.current.pause() : playerRef.current.play();
-    } else {
-      const el = videoRef.current;
-      if (!el) return;
-      isPlaying ? el.pause() : el.play();
-    }
-  };
+  // ── Navigate between videos ─────────────────────────────────────────────────
+  const goNext = useCallback(() => { if (hasNext) setIndex(i => i + 1); }, [hasNext]);
+  const goPrev = useCallback(() => { if (hasPrev) setIndex(i => i - 1); }, [hasPrev]);
 
-  const handleSeek = (e: React.MouseEvent<HTMLDivElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const ratio = (e.clientX - rect.left) / rect.width;
-    if (isVimeo) {
-      if (!playerRef.current || !duration) return;
-      playerRef.current.setCurrentTime(ratio * duration);
-    } else {
-      const el = videoRef.current;
-      if (!el || !duration) return;
-      el.currentTime = ratio * duration;
-    }
-    setProgress(ratio * 100);
-  };
-
-  const handleVolume = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = parseFloat(e.target.value);
-    setVolume(val);
-    if (isVimeo) playerRef.current?.setVolume(val);
-    else if (videoRef.current) videoRef.current.volume = val;
-  };
-
-  const goFullscreen = () => {
-    if (document.fullscreenElement) document.exitFullscreen();
-    else cardRef.current?.requestFullscreen?.();
-  };
-
-  const resetIdle = () => {
-    if (!document.fullscreenElement) return;
-    setShowControls(true);
-    if (idleTimer.current) clearTimeout(idleTimer.current);
-    idleTimer.current = setTimeout(() => setShowControls(false), 2500);
-  };
-
-  // ── Render ────────────────────────────────────────────────────────────────
+  // ── Render ──────────────────────────────────────────────────────────────────
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-8"
-      style={{ background: "rgba(11,44,49,0.92)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)" }}
+      className="fixed inset-0 z-[100] flex items-center justify-center p-0 md:p-6 lg:p-10"
+      style={{
+        background: "rgba(11,44,49,0.92)",
+        backdropFilter: "blur(12px)",
+        WebkitBackdropFilter: "blur(12px)",
+        opacity: isOpen ? 1 : 0,
+        transition: "opacity 0.25s ease",
+      }}
       onClick={onClose}
     >
       <div
         ref={cardRef}
-        className="relative w-full max-w-4xl rounded-2xl overflow-hidden shadow-2xl bg-black"
+        className="relative w-full md:max-w-4xl lg:max-w-5xl rounded-none md:rounded-2xl overflow-hidden shadow-2xl bg-black"
         onClick={(e) => e.stopPropagation()}
-        style={{ border: isFullscreen ? "none" : "1px solid rgba(250,238,233,0.08)" }}
+        style={{
+          border: isFullscreen ? "none" : "1px solid rgba(250,238,233,0.08)",
+          transform: isOpen ? "scale(1)" : "scale(0.96)",
+          transition: "transform 0.3s cubic-bezier(0.22,1,0.36,1)",
+          maxHeight: isFullscreen ? "100vh" : "calc(100vh - 2rem)",
+        }}
       >
-        {/* Header — hidden in fullscreen */}
+        {/* ── Header (hidden in fullscreen) ── */}
         {!isFullscreen && (
-          <div className="flex items-center justify-between px-5 py-3.5 bg-[#0B2C31]/90">
-            <span className="inline-flex items-center gap-1.5 font-sans text-[10px] uppercase tracking-[0.18em] text-[#FAEEE9]/70">
+          <div className="flex items-center justify-between px-4 py-3 bg-[#0B2C31]/95 backdrop-blur-sm">
+            <span className="inline-flex items-center gap-1.5 font-sans text-[10px] uppercase tracking-[0.18em] text-[#FAEEE9]/70 truncate max-w-[60%]">
               {video.location && (
                 <>
                   <svg width="8" height="9" viewBox="0 0 8 10" fill="none" className="shrink-0">
@@ -195,41 +358,44 @@ export default function VideoModal({ videos, startIndex, onClose }: Props) {
               )}
               {!video.location && video.title && <span>{video.title}</span>}
             </span>
-            <div className="flex items-center gap-1">
+
+            <div className="flex items-center gap-1 shrink-0">
               {videos.length > 1 && (
                 <>
-                  <button onClick={() => setIndex(i => i - 1)} disabled={!hasPrev} className="w-7 h-7 flex items-center justify-center text-[#FAEEE9]/50 hover:text-[#FAEEE9] disabled:opacity-25 transition-colors">
+                  <button onClick={goPrev} disabled={!hasPrev} className="w-8 h-8 flex items-center justify-center text-[#FAEEE9]/50 hover:text-[#FAEEE9] disabled:opacity-20 transition-colors rounded-lg hover:bg-white/5">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
                   </button>
-                  <span className="font-sans text-[10px] text-[#FAEEE9]/40 mx-1">{index + 1} / {videos.length}</span>
-                  <button onClick={() => setIndex(i => i + 1)} disabled={!hasNext} className="w-7 h-7 flex items-center justify-center text-[#FAEEE9]/50 hover:text-[#FAEEE9] disabled:opacity-25 transition-colors">
+                  <span className="font-sans text-[10px] text-[#FAEEE9]/40 px-1 tabular-nums">{index + 1} / {videos.length}</span>
+                  <button onClick={goNext} disabled={!hasNext} className="w-8 h-8 flex items-center justify-center text-[#FAEEE9]/50 hover:text-[#FAEEE9] disabled:opacity-20 transition-colors rounded-lg hover:bg-white/5">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M9 18l6-6-6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
                   </button>
-                  <div className="w-px h-4 bg-[#FAEEE9]/15 mx-2" />
+                  <div className="w-px h-4 bg-[#FAEEE9]/15 mx-1"/>
                 </>
               )}
-              <button onClick={onClose} className="w-7 h-7 flex items-center justify-center text-[#FAEEE9]/50 hover:text-[#FAEEE9] transition-colors" title="Close">
+              <button onClick={onClose} title="Close (Esc)" className="w-8 h-8 flex items-center justify-center text-[#FAEEE9]/50 hover:text-[#FAEEE9] transition-colors rounded-lg hover:bg-white/5">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
               </button>
             </div>
           </div>
         )}
 
-        {/* Video area */}
+        {/* ── Video area ── */}
         <div
-          className="relative bg-black"
+          className="relative bg-black select-none"
           style={{
             aspectRatio: isFullscreen ? undefined : "16/9",
             width:  isFullscreen ? "100vw" : undefined,
             height: isFullscreen ? "100vh" : undefined,
             cursor: isFullscreen && !showControls ? "none" : "default",
           }}
+          onMouseMove={() => { if (isPlaying) bumpControls(); }}
+          onMouseEnter={() => setShowControls(true)}
         >
           {/* Vimeo iframe */}
           {isVimeo && (
             <iframe
               ref={iframeRef}
-              key={`${video.vimeoId}-${index}`}
+              key={`vimeo-${video.vimeoId}-${index}`}
               src={`https://player.vimeo.com/video/${video.vimeoId}?autoplay=1&badge=0&autopause=0&app_id=58479&title=0&byline=0&portrait=0&controls=0`}
               allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media"
               allowFullScreen
@@ -241,7 +407,7 @@ export default function VideoModal({ videos, startIndex, onClose }: Props) {
           {!isVimeo && (
             <video
               ref={videoRef}
-              key={`${video.videoUrl}-${index}`}
+              key={`html5-${video.videoUrl}-${index}`}
               src={video.videoUrl}
               autoPlay
               playsInline
@@ -249,54 +415,135 @@ export default function VideoModal({ videos, startIndex, onClose }: Props) {
             />
           )}
 
-          {/* Transparent interceptor — captures mouse/dblclick above iframe/video */}
+          {/* Buffering spinner */}
+          {isBuffering && (
+            <div className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none">
+              <div className="player-spinner"/>
+            </div>
+          )}
+
+          {/* Click feedback */}
+          {clickAnim && (
+            <div key={clickAnim.key} className="absolute inset-0 z-30 flex items-center justify-center pointer-events-none">
+              <div className="video-click-anim w-16 h-16 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-sm">
+                {clickAnim.type === "play"  && <PlayIcon/>}
+                {clickAnim.type === "pause" && <PauseIcon/>}
+                {clickAnim.type === "fwd"   && <Skip10FwdIcon/>}
+                {clickAnim.type === "back"  && <Skip10BackIcon/>}
+              </div>
+            </div>
+          )}
+
+          {/* Transparent interceptor for click/dblclick */}
           <div
             className="absolute inset-0 z-10"
-            onClick={togglePlay}
-            onMouseMove={resetIdle}
-            onDoubleClick={goFullscreen}
+            onClick={isMobile ? handleVideoTap : doTogglePlay}
+            onDoubleClick={isMobile ? undefined : goFullscreen}
+            onTouchEnd={(e) => {
+              // Single touch tap on mobile → handled by onClick via touch
+              if (e.changedTouches.length === 1) e.preventDefault();
+            }}
           />
 
-          {/* Custom controls overlay */}
+          {/* ── Controls overlay ── */}
           <div
-            className="absolute inset-x-0 bottom-0 z-20 px-4 pb-4 pt-10 flex flex-col gap-2 transition-opacity duration-500"
+            className="absolute inset-x-0 bottom-0 z-20 px-3 md:px-4 pb-3 md:pb-4 pt-12 md:pt-16 flex flex-col gap-2 md:gap-3 transition-opacity duration-300"
             style={{
-              background: "linear-gradient(transparent, rgba(0,0,0,0.65))",
+              background: "linear-gradient(transparent, rgba(0,0,0,0.85))",
               opacity: showControls ? 1 : 0,
               pointerEvents: showControls ? "auto" : "none",
             }}
+            onMouseMove={(e) => e.stopPropagation()}
           >
-            {/* Progress bar */}
+            {/* ── Progress bar ── */}
             <div
-              className="w-full h-1 rounded-full overflow-hidden cursor-pointer relative"
-              style={{ background: isBuffering ? undefined : "rgba(255,255,255,0.2)" }}
-              onClick={handleSeek}
+              id="player-progress-bar"
+              className="group w-full relative cursor-pointer flex items-center touch-none"
+              style={{ height: "20px" }}
+              onMouseDown={handleSeekMouseDown}
+              onTouchStart={handleSeekTouch}
+              onTouchMove={handleSeekTouch}
             >
-              {isBuffering && (
-                <div className="absolute inset-0 rounded-full overflow-hidden">
-                  <div className="absolute inset-0 animate-shimmer"
-                    style={{
-                      background: "linear-gradient(90deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.35) 50%, rgba(255,255,255,0.1) 100%)",
-                      backgroundSize: "200% 100%",
-                    }}
+              {/* Track */}
+              <div
+                className="absolute inset-x-0 rounded-full transition-all duration-150 group-hover:scale-y-[1.5] origin-center"
+                style={{ top: "50%", transform: "translateY(-50%)", height: "3px", background: "rgba(255,255,255,0.2)" }}
+              >
+                {/* Buffered */}
+                {buffered > 0 && (
+                  <div
+                    className="absolute inset-y-0 left-0 rounded-full bg-white/30"
+                    style={{ width: `${buffered}%` }}
                   />
-                </div>
-              )}
-              <div className="h-full bg-white rounded-full transition-all duration-300 relative z-10" style={{ width: `${progress}%` }} />
+                )}
+                {/* Played */}
+                <div
+                  className="absolute inset-y-0 left-0 bg-white rounded-full"
+                  style={{ width: `${progress}%` }}
+                />
+              </div>
+              {/* Thumb */}
+              <div
+                className="absolute top-1/2 -translate-y-1/2 w-3.5 h-3.5 rounded-full bg-white shadow-lg opacity-0 group-hover:opacity-100 pointer-events-none z-10 transition-opacity duration-150"
+                style={{ left: `calc(${progress}% - 7px)` }}
+              />
             </div>
 
-            {/* Bottom row */}
-            <div className="flex items-center gap-3">
+            {/* ── Bottom row ── */}
+            <div className="flex items-center gap-2 md:gap-3">
               {/* Play/Pause */}
-              <button onClick={togglePlay} className="w-8 h-8 rounded-full bg-white/15 hover:bg-white/25 flex items-center justify-center transition-colors shrink-0">
-                {isPlaying
-                  ? <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><rect x="3" y="2" width="4" height="12" rx="1" fill="white"/><rect x="9" y="2" width="4" height="12" rx="1" fill="white"/></svg>
-                  : <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M4 2.5L13 8L4 13.5V2.5Z" fill="white"/></svg>
-                }
+              <button
+                onClick={doTogglePlay}
+                title={isPlaying ? "Pause (Space)" : "Play (Space)"}
+                className="w-8 h-8 md:w-9 md:h-9 rounded-full bg-white/15 hover:bg-white/25 flex items-center justify-center transition-colors shrink-0 active:scale-90"
+              >
+                {isPlaying ? <PauseIcon/> : <PlayIcon/>}
               </button>
 
-              {/* Volume */}
-              <input type="range" min="0" max="1" step="0.05" value={volume} onChange={handleVolume} className="w-16 h-1 accent-white cursor-pointer" />
+              {/* Skip back 10s */}
+              <button
+                onClick={() => doSkip(-10)}
+                title="Back 10s (Shift+←)"
+                className="hidden md:flex w-8 h-8 items-center justify-center text-white/60 hover:text-white transition-colors shrink-0"
+              >
+                <Skip10BackIcon/>
+              </button>
+
+              {/* Skip fwd 10s */}
+              <button
+                onClick={() => doSkip(10)}
+                title="Forward 10s (Shift+→)"
+                className="hidden md:flex w-8 h-8 items-center justify-center text-white/60 hover:text-white transition-colors shrink-0"
+              >
+                <Skip10FwdIcon/>
+              </button>
+
+              {/* Mute toggle */}
+              <button
+                onClick={doMuteToggle}
+                title={isMuted ? "Unmute (M)" : "Mute (M)"}
+                className="flex items-center justify-center text-white/60 hover:text-white transition-colors shrink-0 w-7 h-7"
+              >
+                <VolumeIcon level={effectiveVolume}/>
+              </button>
+
+              {/* Volume slider — hidden on mobile */}
+              {!isMobile && (
+                <input
+                  type="range" min="0" max="1" step="0.02"
+                  value={effectiveVolume}
+                  onChange={(e) => doVolume(parseFloat(e.target.value))}
+                  className="w-16 h-1 accent-white cursor-pointer shrink-0"
+                />
+              )}
+
+              {/* Time */}
+              <span className="font-sans text-[10px] md:text-[11px] text-white/50 tabular-nums select-none">
+                {fmt(currentTime)} / {fmt(duration)}
+              </span>
+
+              {/* Spacer */}
+              <div className="flex-1"/>
 
               {/* Quality (Vimeo only) */}
               {isVimeo && qualities.length > 0 && (
@@ -308,17 +555,12 @@ export default function VideoModal({ videos, startIndex, onClose }: Props) {
                     {activeQuality === "auto" ? "Auto" : activeQuality.toUpperCase()}
                   </button>
                   {showQuality && (
-                    <div className="absolute bottom-8 left-0 bg-black/90 backdrop-blur-md border border-white/10 rounded-xl overflow-hidden min-w-[72px] shadow-2xl">
+                    <div className="absolute bottom-9 right-0 bg-black/95 backdrop-blur-md border border-white/10 rounded-xl overflow-hidden min-w-[80px] shadow-2xl">
                       {[{ id: "auto", label: "Auto" }, ...qualities].map(q => (
                         <button
                           key={q.id}
-                          onClick={() => {
-                            playerRef.current?.setQuality(q.id).catch(() => {});
-                            setActiveQuality(q.id);
-                            setShowQuality(false);
-                            setIsBuffering(true);
-                          }}
-                          className={`block w-full text-left px-3 py-1.5 text-[11px] transition-colors hover:bg-white/10 ${activeQuality === q.id ? "text-white font-semibold" : "text-white/60"}`}
+                          onClick={() => { vimeo.setQuality(q.id); setShowQuality(false); }}
+                          className={`block w-full text-left px-3 py-2 text-[11px] transition-colors hover:bg-white/10 ${activeQuality === q.id ? "text-white font-semibold" : "text-white/60"}`}
                         >
                           {q.label}
                         </button>
@@ -328,11 +570,45 @@ export default function VideoModal({ videos, startIndex, onClose }: Props) {
                 </div>
               )}
 
+              {/* PiP (HTML5 only, desktop) */}
+              {!isVimeo && !isMobile && document.pictureInPictureEnabled && (
+                <button
+                  onClick={html5.requestPiP}
+                  title="Picture-in-Picture"
+                  className="w-7 h-7 flex items-center justify-center text-white/60 hover:text-white transition-colors"
+                >
+                  <PiPIcon/>
+                </button>
+              )}
+
               {/* Fullscreen */}
-              <button onClick={goFullscreen} className="ml-auto w-7 h-7 flex items-center justify-center text-white/60 hover:text-white transition-colors" title="Full screen">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M8 3v5H3M21 8h-5V3M3 16h5v5M16 21v-5h5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              <button
+                onClick={goFullscreen}
+                title={isFullscreen ? "Exit fullscreen (F)" : "Fullscreen (F)"}
+                className="w-7 h-7 flex items-center justify-center text-white/60 hover:text-white transition-colors"
+              >
+                {isFullscreen ? <ExitFullscreenIcon/> : <EnterFullscreenIcon/>}
               </button>
             </div>
+
+            {/* Fullscreen close / nav overlays */}
+            {isFullscreen && (
+              <div className="absolute top-4 right-4 flex items-center gap-2">
+                {videos.length > 1 && (
+                  <>
+                    <button onClick={goPrev} disabled={!hasPrev} className="w-8 h-8 flex items-center justify-center text-white/60 hover:text-white disabled:opacity-20 transition-colors bg-black/40 rounded-full">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
+                    </button>
+                    <button onClick={goNext} disabled={!hasNext} className="w-8 h-8 flex items-center justify-center text-white/60 hover:text-white disabled:opacity-20 transition-colors bg-black/40 rounded-full">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M9 18l6-6-6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
+                    </button>
+                  </>
+                )}
+                <button onClick={onClose} className="w-8 h-8 flex items-center justify-center text-white/60 hover:text-white transition-colors bg-black/40 rounded-full">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>
